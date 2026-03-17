@@ -1,0 +1,41 @@
+site_name: ToolGuard
+site_description: Reliability testing for AI agent tool chains
+repo_url: https://github.com/Harshit-J004/toolguard
+repo_name: Harshit-J004/toolguard
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: cyan
+      accent: blue
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Welcome: index.md
+  - Guide:
+    - Getting Started: getting-started.md
+    - Chain Testing: chain-testing.md
+    - Scoring & Deployment: scoring.md
+    - History & Storage: history.md
+    - Observability: observability.md
+  - API Reference: api.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details

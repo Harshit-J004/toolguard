@@ -1,0 +1,33 @@
+# Weather Chain Example Configuration
+# Run with: toolguard test --chain chain_config.yaml
+
+chain:
+  name: "weather_alert_chain"
+  description: "Fetch weather → process forecast → send alert"
+
+tools:
+  - name: "get_weather"
+    module: "tools"
+    function: "get_weather"
+
+  - name: "process_forecast"
+    module: "tools"
+    function: "process_forecast"
+
+  - name: "send_alert"
+    module: "tools"
+    function: "send_alert"
+
+test_config:
+  test_cases:
+    - happy_path
+    - null_handling
+    - malformed_data
+    - missing_fields
+    - type_mismatch
+  iterations: 10
+  reliability_threshold: 0.85
+
+base_input:
+  location: "NYC"
+  units: "metric"
