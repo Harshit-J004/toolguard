@@ -18,7 +18,7 @@ import asyncio
 import sys
 sys.path.insert(0, ".")
 
-from toolguard import create_tool, test_chain, with_retry, RetryPolicy, CircuitBreaker, with_circuit_breaker
+from toolguard import create_tool, test_chain as run_chain_test, with_retry, RetryPolicy, CircuitBreaker, with_circuit_breaker
 from toolguard.core.scoring import score_chain
 from toolguard.core.compatibility import check_compatibility
 from toolguard.reporters.console import print_chain_report
@@ -82,7 +82,7 @@ def main():
 
     # ── Test 4: Chain test with ALL test cases ──
     print("[4/10] Chain Testing (ALL 8 edge-case types)")
-    report = test_chain(
+    report = run_chain_test(
         [fetch_user, enrich_profile, send_welcome],
         base_input={"name": "Alice", "age": 30},
         test_cases=["happy_path", "null_handling", "malformed_data", "missing_fields", "type_mismatch", "large_payload", "empty_input", "boundary_values"],
