@@ -84,9 +84,10 @@ print(score.summary())
 ║    → parse_csv       (50% success)                                ║
 ╚═══════════════════════════════════════════════════════════════════╝
 
-💡 Suggestion: Check type compatibility between tools. The previous tool
-may return str where parse_csv expects int.
-```
+💡 Suggestion:
+Agent hallucinated payload. Schema mismatch:
+  - Field 'age': Input should be a valid integer (Got: 'thirty' | Type: str)
+  - Field 'salary': Field required (Got: <unknown> | Type: None)
 
 ---
 
