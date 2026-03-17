@@ -6,7 +6,7 @@ Thank you for considering contributing to ToolGuard! We want to make agent tool 
 
 ```bash
 # Fork and clone
-git clone https://github.com/YOUR_USERNAME/toolguard.git
+git clone https://github.com/Harshit-J004/toolguard.git
 cd toolguard
 
 # Install in development mode
@@ -15,7 +15,7 @@ pip install -e ".[dev]"
 # Run tests
 python -m pytest tests/ -v
 
-# All 24 tests should pass
+# All 43 tests should pass
 ```
 
 ## Development Workflow
