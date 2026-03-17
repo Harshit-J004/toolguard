@@ -92,20 +92,22 @@ Agent hallucinated payload. Schema mismatch:
 
 ---
 
-## 🤖 How ToolGuard Knows What to Test
+## 🤖 How ToolGuard is Different
 
-If you use LangSmith or Promptfoo, they test your agent by sending prompts to a live LLM. It is slow, expensive, and non-deterministic.
+Most testing tools (LangSmith, Promptfoo) test your agent by sending prompts to a live LLM. It is slow, expensive, and non-deterministic.
 
 **ToolGuard does NOT use an LLM to run its tests.** 
 
-Instead, it acts like a deterministic fuzzer for Agent tool execution. It programmatically injects the exact types of bad data that an LLM would accidentally generate in production:
+When you decorate a function with `@create_tool(schema="auto")`, ToolGuard reads your Python type hints and automatically generates a Pydantic schema. It then uses that schema to know exactly which fields to break, which types to swap, and which values to null — no manual configuration needed.
+
+It acts like a deterministic fuzzer for AI tool execution, programmatically injecting the exact types of bad data that an LLM would accidentally generate in production:
 1. Missing dictionary keys
 2. Null values propagating down the chain
 3. `str` instead of `int`
 4. Massive 10MB payloads to stress your server
 5. Infinite loops
 
-ToolGuard doesn't test if your AI is smart. It tests if your Python code is bulletproof enough to *survive* when your AI does something stupid—running in 1 second and costing $0 in API fees.
+ToolGuard doesn't test if your AI is smart. It tests if your Python code is bulletproof enough to *survive* when your AI does something stupid — running in 1 second and costing $0 in API fees.
 
 ---
 
