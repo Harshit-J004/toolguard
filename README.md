@@ -288,7 +288,7 @@ toolguard/
 | Testing | pytest (43 tests) | CI/CD native |
 | Observability | OpenTelemetry | Vendor-neutral |
 | CLI | Click + Rich | Beautiful terminal UX |
-| Distribution | PyPI | `pip install toolguard` |
+| Distribution | PyPI | `pip install py-toolguard` |
 
 ---
 

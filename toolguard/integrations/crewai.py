@@ -33,8 +33,8 @@ def guard_crewai_tool(crewai_tool: Any) -> GuardedTool:
         from crewai.tools import BaseTool as CrewBaseTool
     except ImportError:
         raise ImportError(
-            "CrewAI integration requires crewai. "
-            "Install with: pip install toolguard[crewai]"
+            "ToolGuard requires the CrewAI integration. "
+            "Install with: pip install \"py-toolguard[crewai]\""
         )
 
     # Extract the run function

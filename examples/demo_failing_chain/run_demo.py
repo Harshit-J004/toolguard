@@ -2,10 +2,8 @@
 Demo Failing Chain — Run the "Aha Moment"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This script is the FIRST thing a developer runs after `pip install toolguard`.
-
-It demonstrates:
-  1. A 3-tool chain with a HIDDEN null propagation bug
+# This script is the FIRST thing a developer runs after `pip install py-toolguard`.
+# It simulates a common AI failure (an agent sending a malformed object)null propagation bug
   2. ToolGuard catching the exact failure point
   3. Cascading failure visualization
   4. Actionable fix suggestions
@@ -124,8 +122,8 @@ def main():
     print()
     print("=" * 60)
     print("  💡 This is what ToolGuard does.")
-    print("     Install: pip install toolguard")
-    print("     3 lines of code. Full visibility.")
+    print("     Install: pip install py-toolguard")
+    print("     Configure your OpenAI key: export OPENAI_API_KEY=...")
     print("=" * 60)
     print()
 

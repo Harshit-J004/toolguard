@@ -5,7 +5,7 @@ Install ToolGuard and test your first tool chain in under 5 minutes.
 ## Installation
 
 ```bash
-pip install toolguard
+pip install py-toolguard
 ```
 
 ## Step 1: Wrap Your Tools

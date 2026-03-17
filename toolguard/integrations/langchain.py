@@ -37,8 +37,8 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
         from langchain_core.tools import BaseTool
     except ImportError:
         raise ImportError(
-            "LangChain integration requires langchain-core. "
-            "Install with: pip install toolguard[langchain]"
+            "ToolGuard requires the LangChain integration. "
+            "Install with: pip install \"py-toolguard[langchain]\""
         )
 
     if not isinstance(lc_tool, BaseTool):
