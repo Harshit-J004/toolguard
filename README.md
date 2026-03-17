@@ -94,7 +94,7 @@ Agent hallucinated payload. Schema mismatch:
 ## Quick Start
 
 ```bash
-pip install toolguard
+pip install py-toolguard
 ```
 
 ```python
