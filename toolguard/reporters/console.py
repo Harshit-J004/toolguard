@@ -110,8 +110,8 @@ def _build_failure_panel(index: int, failure: dict) -> Panel:
     content.append(f" \u2192 {_truncate(failure['error_type'], 100)}\n", style="red")
     content.append("\n\U0001f50d Root cause: ", style="bold")
     content.append(f"{_truncate(failure['root_cause'])}\n", style="white")
-    content.append("\n\U0001f4a1 Suggestion: ", style="bold green")
-    content.append(f"{_truncate(failure['suggestion'])}", style="green")
+    content.append("\n\U0001f4a1 Suggestion: \n", style="bold green")
+    content.append(f"{failure['suggestion']}", style="green")
 
     return Panel(
         content,

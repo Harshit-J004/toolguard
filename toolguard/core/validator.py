@@ -198,16 +198,26 @@ class GuardedTool:
             validated = self._input_model(**bound.arguments)
             return validated.model_dump()
         except ValidationError as e:
+            # Extract exactly what the agent passed that broke it
+            bad_payload = dict(bound.arguments)
+            
+            # Format a surgical suggestion
+            specifics = []
+            for err in e.errors():
+                loc = ".".join(str(p) for p in err["loc"])
+                msg = err["msg"]
+                val = err.get("input", "<unknown>")
+                specifics.append(f"Field '{loc}': {msg} (Got: {repr(val)} | Type: {type(val).__name__})")
+            
+            suggestion = "Agent hallucinated payload. Schema mismatch:\n" + "\n".join("  - " + s for s in specifics)
+
             raise SchemaValidationError(
                 f"Input validation failed for '{self.__name__}'",
                 tool_name=self.__name__,
                 direction="input",
                 validation_errors=e.errors(),
                 correlation_id=_correlation_id,
-                suggestion=(
-                    f"Check the arguments passed to {self.__name__}(). "
-                    f"Expected schema: {self._input_model.model_json_schema()}"
-                ),
+                suggestion=suggestion,
             ) from e
 
     def _validate_output(self, result: Any, *, _correlation_id: str = "") -> Any:
@@ -222,17 +232,23 @@ class GuardedTool:
                 validated = self._output_model(value=result)
             return validated.model_dump()
         except ValidationError as e:
+            # Format a surgical suggestion
+            specifics = []
+            for err in e.errors():
+                loc = ".".join(str(p) for p in err["loc"])
+                msg = err["msg"]
+                val = err.get("input", "<unknown>")
+                specifics.append(f"Field '{loc}': {msg} (Got: {repr(val)} | Type: {type(val).__name__})")
+            
+            suggestion = "Tool returned invalid data. Schema mismatch:\n" + "\n".join("  - " + s for s in specifics)
+
             raise SchemaValidationError(
                 f"Output validation failed for '{self.__name__}'",
                 tool_name=self.__name__,
                 direction="output",
                 validation_errors=e.errors(),
                 correlation_id=_correlation_id,
-                suggestion=(
-                    f"{self.__name__} returned data that doesn't match the expected schema. "
-                    f"Got: {type(result).__name__}. "
-                    f"Expected: {self._output_model.model_json_schema()}"
-                ),
+                suggestion=suggestion,
             ) from e
 
     # ── Utilities ────────────────────────────────────────
