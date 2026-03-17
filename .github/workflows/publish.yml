@@ -1,0 +1,38 @@
+name: Publish ToolGuard to PyPI
+
+on:
+  workflow_dispatch:  # Allows you to click a button on GitHub to upload manually!
+
+jobs:
+  pypi-publish:
+    name: upload release to PyPI
+    runs-on: ubuntu-latest
+    
+    # These permissions are required for Trusted Publishing to work
+    environment:
+      name: pypi
+      url: https://pypi.org/p/py-toolguard
+    permissions:
+      id-token: write  
+      contents: read
+      
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install pypa/build
+        run: >-
+          python -m
+          pip install
+          build
+          --user
+          
+      - name: Build a binary wheel and a source tarball
+        run: python -m build
+        
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
