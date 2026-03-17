@@ -88,6 +88,7 @@ print(score.summary())
 Agent hallucinated payload. Schema mismatch:
   - Field 'age': Input should be a valid integer (Got: 'thirty' | Type: str)
   - Field 'salary': Field required (Got: <unknown> | Type: None)
+```
 
 ---
 
