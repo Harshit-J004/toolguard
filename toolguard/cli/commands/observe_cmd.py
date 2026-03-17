@@ -13,9 +13,6 @@ from pathlib import Path
 
 import click
 from rich.console import Console
-from rich.live import Live
-from rich.table import Table
-from rich import box
 
 from toolguard.reporters.console import print_tool_stats
 
@@ -80,7 +77,7 @@ def observe_cmd(tools: str | None, demo: bool) -> None:
 
 def _run_demo() -> None:
     """Run a demo with simulated tool stats."""
-    from toolguard.core.validator import create_tool, GuardedTool
+    from toolguard.core.validator import create_tool
 
     @create_tool(schema="auto")
     def get_weather(location: str = "NYC", units: str = "metric") -> dict:

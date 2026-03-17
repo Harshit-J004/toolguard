@@ -21,11 +21,9 @@ from __future__ import annotations
 
 import json
 import sqlite3
-import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from toolguard.core.report import ChainTestReport
 
@@ -99,7 +97,7 @@ class ReliabilityTrend:
     entries: list[HistoryEntry]
 
     @property
-    def latest(self) -> Optional[HistoryEntry]:
+    def latest(self) -> HistoryEntry | None:
         return self.entries[-1] if self.entries else None
 
     @property
@@ -229,15 +227,15 @@ class ResultStore:
         Returns:
             List of HistoryEntry, oldest first.
         """
-        since = (datetime.now() - timedelta(days=days)).isoformat()
+        modifier = f"-{days} days"
         rows = self._conn.execute(
             """
             SELECT * FROM test_runs
-            WHERE chain_name = ? AND run_at >= ?
+            WHERE chain_name = ? AND run_at >= datetime('now', ?)
             ORDER BY run_at ASC
             LIMIT ?
             """,
-            (chain_name, since, limit),
+            (chain_name, modifier, limit),
         ).fetchall()
 
         return [self._row_to_entry(row) for row in rows]

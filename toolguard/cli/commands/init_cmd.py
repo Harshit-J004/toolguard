@@ -154,9 +154,9 @@ def init_cmd(name: str, path: str) -> None:
     console.print(f"  ✓ Created [cyan]{runner_path.name}[/]")
 
     console.print(f"\n[bold green]✅ Project '{name}' initialized![/]")
-    console.print(f"\n[dim]Next steps:[/]")
+    console.print("\n[dim]Next steps:[/]")
     console.print(f"  1. cd {target}")
-    console.print(f"  2. Edit [cyan]tools.py[/] with your real tools")
-    console.print(f"  3. Run [cyan]python run_tests.py[/] to test your chain")
+    console.print("  2. Edit [cyan]tools.py[/] with your real tools")
+    console.print("  3. Run [cyan]python run_tests.py[/] to test your chain")
     console.print(f"  4. Run [cyan]toolguard test --chain {name}_chain.yaml[/]")
     console.print()

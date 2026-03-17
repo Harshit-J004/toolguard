@@ -12,17 +12,16 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import time
 import threading
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
 from toolguard.core.errors import SchemaValidationError, _new_correlation_id
 from toolguard.core.schema import ToolSchema, auto_generate_input_model, auto_generate_schema
-
 
 # ──────────────────────────────────────────────────────────
 #  Execution Stats (thread-safe)
@@ -145,7 +144,7 @@ class GuardedTool:
             self.stats.record_failure(latency)
             raise
 
-        except Exception as exc:
+        except Exception:
             latency = (time.perf_counter() - start) * 1000
             self.stats.record_failure(latency)
             raise
@@ -176,7 +175,7 @@ class GuardedTool:
             self.stats.record_failure(latency)
             raise
 
-        except Exception as exc:
+        except Exception:
             latency = (time.perf_counter() - start) * 1000
             self.stats.record_failure(latency)
             raise

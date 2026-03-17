@@ -12,13 +12,13 @@ Usage:
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
-from pydantic import BaseModel, create_model
+from pydantic import create_model
 
-from toolguard.core.validator import GuardedTool, create_tool
 from toolguard.core.schema import ToolSchema
-
+from toolguard.core.validator import GuardedTool
 
 # ──────────────────────────────────────────────────────────
 #  Export: ToolGuard → OpenAI Function Schema

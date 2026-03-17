@@ -32,11 +32,11 @@ def cli() -> None:
 
 # ── Register subcommands ─────────────────────────────────
 
-from toolguard.cli.commands.init_cmd import init_cmd
-from toolguard.cli.commands.test_cmd import test_cmd
 from toolguard.cli.commands.check_cmd import check_cmd
-from toolguard.cli.commands.observe_cmd import observe_cmd
 from toolguard.cli.commands.history_cmd import history_cmd
+from toolguard.cli.commands.init_cmd import init_cmd
+from toolguard.cli.commands.observe_cmd import observe_cmd
+from toolguard.cli.commands.test_cmd import test_cmd
 
 cli.add_command(init_cmd, "init")
 cli.add_command(test_cmd, "test")
@@ -52,8 +52,8 @@ def info_cmd() -> None:
     """Show ToolGuard banner and version info."""
     print_banner()
     click.echo(f"  Version: {__version__}")
-    click.echo(f"  Docs:    https://toolguard.dev")
-    click.echo(f"  GitHub:  https://github.com/toolguard/toolguard")
+    click.echo("  Docs:    https://toolguard.dev")
+    click.echo("  GitHub:  https://github.com/toolguard/toolguard")
     click.echo()
 
 

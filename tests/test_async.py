@@ -8,11 +8,12 @@ Verifies that:
   - Stats tracking works identically for async tools
 """
 import asyncio
+
 import pytest
-from toolguard.core.validator import create_tool, GuardedTool
+
 from toolguard.core.chain import test_chain as run_chain_test
 from toolguard.core.errors import SchemaValidationError
-
+from toolguard.core.validator import GuardedTool, create_tool
 
 # ── Async GuardedTool ─────────────────────────────────────
 

@@ -9,9 +9,9 @@ Tests cover:
   - Report structure (failure_analyses, runs, steps)
 """
 import pytest
+
 from toolguard.core.chain import test_chain as run_chain_test
 from toolguard.core.validator import create_tool
-
 
 # ── Helper tools (defined here for isolation) ─────────────
 

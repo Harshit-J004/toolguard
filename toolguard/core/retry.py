@@ -12,15 +12,15 @@ These can be composed with @create_tool for production-grade reliability.
 from __future__ import annotations
 
 import random
-import time
 import threading
-from dataclasses import dataclass, field
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Sequence, Type
+from typing import Any
 
-from toolguard.core.errors import CircuitBreakerOpenError, ToolTimeoutError
-
+from toolguard.core.errors import CircuitBreakerOpenError
 
 # ──────────────────────────────────────────────────────────
 #  Retry Policy
@@ -42,7 +42,7 @@ class RetryPolicy:
     backoff_base: float = 0.5
     backoff_max: float = 30.0
     jitter: bool = True
-    retryable_exceptions: tuple[Type[Exception], ...] = (
+    retryable_exceptions: tuple[type[Exception], ...] = (
         TimeoutError,
         ConnectionError,
         OSError,

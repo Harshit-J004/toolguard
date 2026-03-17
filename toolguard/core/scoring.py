@@ -19,10 +19,10 @@ This becomes the "deploy gate" feature:
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, TYPE_CHECKING
-from collections import Counter
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from toolguard.core.report import ChainTestReport
@@ -155,24 +155,24 @@ class ReliabilityScore:
         }
 
         lines = [
-            f"╔══════════════════════════════════════════════════╗",
+            "╔══════════════════════════════════════════════════╗",
             f"║  Reliability Score: {self.chain_name:<29}║",
-            f"╠══════════════════════════════════════════════════╣",
+            "╠══════════════════════════════════════════════════╣",
             f"║  Score:      {self.reliability:>6.1%}                             ║",
             f"║  Risk Level: {risk_icons[self.risk_level]} {self.risk_level.value:<10}                    ║",
             f"║  Deploy:     {deploy_icons[self.deploy_recommendation]:<15}                   ║",
             f"║  Confidence: {self.confidence:>6.1%}                             ║",
-            f"╠══════════════════════════════════════════════════╣",
+            "╠══════════════════════════════════════════════════╣",
         ]
 
         # Top risk
         if self.top_risk:
             lines.append(f"║  ⚠️  Top Risk: {self.top_risk:<33}║")
-            lines.append(f"╠══════════════════════════════════════════════════╣")
+            lines.append("╠══════════════════════════════════════════════════╣")
 
         # Failure distribution
         if self.failure_distribution:
-            lines.append(f"║  Failure Distribution:                           ║")
+            lines.append("║  Failure Distribution:                           ║")
             for category, count in sorted(
                 self.failure_distribution.items(),
                 key=lambda x: x[1],
@@ -181,17 +181,17 @@ class ReliabilityScore:
                 pct = count / self.failed * 100 if self.failed > 0 else 0
                 bar = "█" * int(pct / 5) + "░" * (20 - int(pct / 5))
                 lines.append(f"║    {category:<18} {bar} {count:>3} ({pct:.0f}%)  ║")
-            lines.append(f"╠══════════════════════════════════════════════════╣")
+            lines.append("╠══════════════════════════════════════════════════╣")
 
         # Bottleneck tools
         bottlenecks = [t for t in self.tool_scores if t.is_bottleneck]
         if bottlenecks:
-            lines.append(f"║  ⚠️  Bottleneck Tools:                            ║")
+            lines.append("║  ⚠️  Bottleneck Tools:                            ║")
             for tool in bottlenecks:
                 lines.append(f"║    → {tool.name:<20} ({tool.success_rate:.0%} success)    ║")
-            lines.append(f"╠══════════════════════════════════════════════════╣")
+            lines.append("╠══════════════════════════════════════════════════╣")
 
-        lines.append(f"╚══════════════════════════════════════════════════╝")
+        lines.append("╚══════════════════════════════════════════════════╝")
         return "\n".join(lines)
 
     def to_dict(self) -> dict[str, Any]:

@@ -12,9 +12,8 @@ Tests cover:
 import pytest
 from pydantic import BaseModel
 
-from toolguard.core.validator import create_tool, GuardedTool
 from toolguard.core.errors import SchemaValidationError
-
+from toolguard.core.validator import GuardedTool, create_tool
 
 # ── Basic decorator behaviour ─────────────────────────────
 
@@ -33,7 +32,6 @@ class TestCreateToolBasic:
         def my_unique_tool(x: int) -> int:
             return x
 
-        assert greet.__name__ == "my_unique_tool"  if False else True
         assert my_unique_tool.__name__ == "my_unique_tool"
 
     def test_preserves_docstring(self):

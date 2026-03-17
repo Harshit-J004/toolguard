@@ -2,6 +2,7 @@
 pytest configuration and shared fixtures for ToolGuard test suite.
 """
 import pytest
+
 from toolguard.core.validator import create_tool
 
 

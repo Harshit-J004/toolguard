@@ -12,8 +12,9 @@ format that works with Jaeger, Zipkin, Datadog, and more.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 # OpenTelemetry imports (graceful fallback if not installed)
 try:
@@ -182,14 +183,14 @@ def _safe_str(obj: Any, max_len: int = 200) -> str:
 class _NoOpTracer:
     """Fallback tracer when OpenTelemetry is not available."""
 
-    def start_as_current_span(self, name: str, **kwargs: Any) -> "_NoOpSpan":
+    def start_as_current_span(self, name: str, **kwargs: Any) -> _NoOpSpan:
         return _NoOpSpan()
 
 
 class _NoOpSpan:
     """No-op span for when tracing is disabled."""
 
-    def __enter__(self) -> "_NoOpSpan":
+    def __enter__(self) -> _NoOpSpan:
         return self
 
     def __exit__(self, *args: Any) -> None:

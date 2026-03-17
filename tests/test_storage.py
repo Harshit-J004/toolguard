@@ -10,11 +10,12 @@ Verifies that:
 """
 import os
 import tempfile
+
 import pytest
 
-from toolguard.core.validator import create_tool
 from toolguard.core.chain import test_chain as run_chain_test
-from toolguard.storage.db import ResultStore, HistoryEntry, ReliabilityTrend
+from toolguard.core.validator import create_tool
+from toolguard.storage.db import HistoryEntry, ReliabilityTrend, ResultStore
 
 
 @pytest.fixture

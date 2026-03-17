@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import inspect
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional, get_type_hints
+from typing import Any, get_type_hints
 
 from pydantic import BaseModel, Field, create_model
-
 
 # ──────────────────────────────────────────────────────────
 #  Schema Model

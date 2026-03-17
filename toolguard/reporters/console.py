@@ -12,15 +12,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
-from rich import box
 
 if TYPE_CHECKING:
-    from toolguard.core.report import ChainTestReport, FailureAnalysis
     from toolguard.core.compatibility import CompatibilityReport
+    from toolguard.core.report import ChainTestReport
 
 console = Console()
 
@@ -108,9 +108,9 @@ def _build_failure_panel(index: int, failure: dict) -> Panel:
     content.append(f"[{failure['count']}x] ", style="bold red")
     content.append(f"{_truncate(failure['tool_name'], 100)}", style="bold yellow")
     content.append(f" \u2192 {_truncate(failure['error_type'], 100)}\n", style="red")
-    content.append(f"\n\U0001f50d Root cause: ", style="bold")
+    content.append("\n\U0001f50d Root cause: ", style="bold")
     content.append(f"{_truncate(failure['root_cause'])}\n", style="white")
-    content.append(f"\n\U0001f4a1 Suggestion: ", style="bold green")
+    content.append("\n\U0001f4a1 Suggestion: ", style="bold green")
     content.append(f"{_truncate(failure['suggestion'])}", style="green")
 
     return Panel(

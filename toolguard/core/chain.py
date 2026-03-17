@@ -19,15 +19,13 @@ from __future__ import annotations
 
 import asyncio
 import copy
-import inspect
 import time
-from dataclasses import dataclass, field
+from collections.abc import Callable, Sequence
 from enum import Enum
-from typing import Any, Callable, Sequence
+from typing import Any
 
-from toolguard.core.errors import ChainExecutionError, _new_correlation_id
+from toolguard.core.errors import _new_correlation_id
 from toolguard.core.report import ChainRun, ChainTestReport, StepResult
-
 
 # ──────────────────────────────────────────────────────────
 #  Test Case Types
