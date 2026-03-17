@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolGuard Report — Full Validation Pipeline</title>
+    <style>
+        :root {
+            --bg: #0f172a; --surface: #1e293b; --border: #334155;
+            --text: #e2e8f0; --muted: #94a3b8;
+            --green: #22c55e; --red: #ef4444; --yellow: #eab308;
+            --blue: #3b82f6; --cyan: #06b6d4;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text);
+            line-height: 1.6; padding: 2rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 {
+            font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .subtitle { color: var(--muted); margin-bottom: 2rem; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; }
+        .stat-label { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; }
+        .stat-green { color: var(--green); }
+        .stat-red { color: var(--red); }
+        .stat-blue { color: var(--blue); }
+        .badge {
+            display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px;
+            font-weight: 600; font-size: 0.875rem;
+        }
+        .badge-pass { background: rgba(34,197,94,0.15); color: var(--green); }
+        .badge-fail { background: rgba(239,68,68,0.15); color: var(--red); }
+        .failure { border-left: 3px solid var(--red); padding-left: 1rem; margin-bottom: 1rem; }
+        .failure-title { font-weight: 600; color: var(--yellow); }
+        .suggestion { color: var(--green); font-style: italic; }
+        .cascade { font-family: monospace; color: var(--cyan); margin: 0.5rem 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th { text-align: left; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; padding: 0.5rem; border-bottom: 1px solid var(--border); }
+        td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
+        .footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🧪 ToolGuard Report</h1>
+    <p class="subtitle">Full Validation Pipeline</p>
+
+    <div class="card">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value stat-blue">24</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value stat-green">14</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value stat-red">10</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value stat-green">
+                    58.3%
+                </div>
+                <div class="stat-label">Reliability</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 style="margin-bottom: 1rem;">
+            <span class="badge badge-pass">
+                ✅ PASSED
+            </span>
+            <span style="color: var(--muted); font-size: 0.85rem; margin-left: 0.5rem;">
+                Threshold: 0%
+            </span>
+        </h2>
+    </div>
+
+    
+    <div class="card">
+        <h2 style="margin-bottom: 1rem; color: var(--red);">Top Failures</h2>
+        
+        <div class="failure">
+            <div class="failure-title">[6x] fetch_user → SchemaValidationError</div>
+            <p>🔍 fetch_user received or returned null/None value</p>
+            <p class="suggestion">💡 Add null check: if data is None: return default_value(). Or add a default in fetch_user's output schema.</p>
+        </div>
+        
+        <div class="failure">
+            <div class="failure-title">[4x] fetch_user → TypeError</div>
+            <p>🔍 fetch_user failed with: TypeError</p>
+            <p class="suggestion">💡 Review fetch_user's error handling. Consider wrapping with @with_retry() or adding input validation.</p>
+        </div>
+        
+    </div>
+    
+
+    
+    <div class="card">
+        <h2 style="margin-bottom: 1rem; color: var(--yellow);">Cascade Paths</h2>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+        <div class="cascade">fetch_user ✗</div>
+        
+    </div>
+    
+
+    <div class="footer">
+        Generated by ToolGuard v0.1.0 — Reliability testing for AI agent tool chains
+    </div>
+</div>
+</body>
+</html>
