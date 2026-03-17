@@ -190,20 +190,33 @@ toolguard observe --tools my_tools.py          # View tool stats
 toolguard init --name my_project               # Scaffold project
 ```
 
-### 🔌 Integrations
+### 🔌 Native Framework Integrations
+
+If you are already using **LangChain** or **CrewAI**, you do **not** need to rewrite your tools to use ToolGuard. 
+
+ToolGuard provides native adapters that instantly convert your existing framework tools into `GuardedTools` so you can stress-test them immediately.
 
 ```python
-# LangChain
+# 🦜🔗 LangChain
 from toolguard.integrations.langchain import guard_langchain_tool
-guarded = guard_langchain_tool(my_langchain_tool)
+from my_app import my_langchain_tool
 
-# OpenAI Function Calling
-from toolguard.integrations.openai_func import to_openai_function
-schema = to_openai_function(my_tool)  # Export to OpenAI format
+guarded_tool = guard_langchain_tool(my_langchain_tool)
+report = test_chain([guarded_tool], ...)
 
-# CrewAI
+# ⚙️ CrewAI
 from toolguard.integrations.crewai import guard_crewai_tool
-guarded = guard_crewai_tool(my_crew_tool)
+from my_app import my_crew_tool
+
+guarded_tool = guard_crewai_tool(my_crew_tool)
+report = test_chain([guarded_tool], ...)
+
+# 🤖 OpenAI Function Calling
+from toolguard.integrations.openai_func import to_openai_function
+from my_app import my_python_tool
+
+# Instantly export any ToolGuard tool to the strict OpenAI JSON schema format
+openai_schema = to_openai_function(my_python_tool)
 ```
 
 ### 📡 Observability
