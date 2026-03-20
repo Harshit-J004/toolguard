@@ -160,9 +160,12 @@ class GuardedTool:
             self.stats.record_failure(latency)
             raise
 
-        except Exception:
+        except Exception as e:
             latency = (time.perf_counter() - start) * 1000
             self.stats.record_failure(latency)
+            
+            from toolguard.alerts.manager import dispatch_alert
+            dispatch_alert(self.__name__, {"args": args, "kwargs": kwargs}, e)
             raise
 
     async def _acall(self, *args: Any, **kwargs: Any) -> Any:
@@ -191,9 +194,12 @@ class GuardedTool:
             self.stats.record_failure(latency)
             raise
 
-        except Exception:
+        except Exception as e:
             latency = (time.perf_counter() - start) * 1000
             self.stats.record_failure(latency)
+            
+            from toolguard.alerts.manager import dispatch_alert
+            dispatch_alert(self.__name__, {"args": args, "kwargs": kwargs}, e)
             raise
 
     # ── Validation logic ─────────────────────────────────
@@ -216,6 +222,9 @@ class GuardedTool:
         except ValidationError as e:
             # Extract exactly what the agent passed that broke it
             bad_payload = dict(bound.arguments)
+            
+            from toolguard.alerts.manager import dispatch_alert
+            dispatch_alert(self.__name__, bad_payload, e)
             
             # Format a surgical suggestion
             specifics = []
@@ -248,6 +257,10 @@ class GuardedTool:
                 validated = self._output_model(value=result)
             return validated.model_dump()
         except ValidationError as e:
+            from toolguard.alerts.manager import dispatch_alert
+            payload = result if isinstance(result, dict) else {"output": result}
+            dispatch_alert(self.__name__, payload, e)
+            
             # Format a surgical suggestion
             specifics = []
             for err in e.errors():

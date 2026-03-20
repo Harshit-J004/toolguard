@@ -38,6 +38,7 @@ from toolguard.core.scoring import (
 )
 from toolguard.core.validator import GuardedTool, create_tool
 from toolguard.storage import ResultStore
+from toolguard.alerts import configure_alerts
 
 __all__ = [
     # Decorators & wrappers

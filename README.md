@@ -298,8 +298,25 @@ Generates shields.io badge markdown for your README:
 
 ---
 
-## 📡 Observability
-OpenTelemetry tracing out of the box — works with Jaeger, Zipkin, Datadog, and more.
+## 📡 Observability & Production Alerts
+
+### 1. Zero-Latency Hallucination Alerts
+Catch "LLM drift" in production. When an LLM hallucinates a bad JSON payload, ToolGuard instantly fires a background alert to your team without slowing down the agent:
+
+```python
+import toolguard
+
+toolguard.configure_alerts(
+    slack_webhook_url="https://hooks.slack.com/...",
+    discord_webhook_url="https://discord.com/api/webhooks/...",
+    datadog_api_key="my-api-key",
+    generic_webhook_url="https://my-dashboard.com/api/ingest"
+)
+```
+*Built with background thread pools so network requests never block the LLM runtime.*
+
+### 2. OpenTelemetry Tracing
+Tracing works out of the box with Jaeger, Zipkin, Datadog, and more.
 
 ```python
 from toolguard.core.tracer import init_tracing, trace_tool
