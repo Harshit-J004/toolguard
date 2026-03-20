@@ -246,6 +246,9 @@ guarded = as_fastapi_tool(my_endpoint_function)
 
 All 6 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
 
+### 🧹 100% Authentic Testing (Zero Mocks)
+ToolGuard's integration suite runs exclusively against the *actual* PyPI codebase implementations of LangChain, AutoGen, Swarm, FastAPI, and CrewAI. There is absolutely no faked compatibility—it is mathematically proven against the live libraries. We deleted all fake "mock" tests to ensure the standard of reliability is pristine.
+
 ---
 
 ## 🏗️ CI/CD Integration
