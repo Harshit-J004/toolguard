@@ -9,7 +9,7 @@ Catch cascading failures before production. Make agent tool calling as predictab
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
-[![Integrations](https://img.shields.io/badge/integrations-6%20frameworks-blueviolet?style=flat-square)](#-native-framework-integrations)
+[![Integrations](https://img.shields.io/badge/integrations-6%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
 
 </div>
 
@@ -189,6 +189,7 @@ ToolGuard works with your existing tools. No rewrites needed — just wrap and f
 ```python
 # 🦜🔗 LangChain
 from langchain_core.tools import tool
+from toolguard import test_chain
 from toolguard.integrations.langchain import guard_langchain_tool
 
 @tool
@@ -262,7 +263,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Harshit-J004/toolguard@v1
+      - uses: Harshit-J004/toolguard@main
         with:
           script_path: src/agent.py
           github_token: ${{ secrets.GITHUB_TOKEN }}
