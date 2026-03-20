@@ -144,6 +144,15 @@ async def fetch_from_api(url: str) -> dict:
 report = test_chain([fetch_from_api, process_data], assert_reliability=0.95)
 ```
 
+### 🦇 Immersive Live Dashboard
+When testing locally, you don't have to stare at basic print logs. By passing `--dashboard`, ToolGuard launches a stunning, high-contrast, dark-mode terminal UI (built on Textual).
+
+```bash
+toolguard run my_agent.py --dashboard
+```
+
+It streams live, concurrent fuzzing results as they happen, calculates metrics in realtime, and tracks exactly which functions crash under payload injection—all encapsulated in a dedicated hacker-style "Mission Control" interface.
+
 ### 📊 Reliability Scoring
 Quantified trust with risk levels and deployment gates.
 
