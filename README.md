@@ -8,7 +8,8 @@ Catch cascading failures before production. Make agent tool calling as predictab
 
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-43%20passed-brightgreen?style=flat-square)](#)
+[![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
+[![Integrations](https://img.shields.io/badge/integrations-6%20frameworks-blueviolet?style=flat-square)](#-native-framework-integrations)
 
 </div>
 
@@ -28,9 +29,43 @@ There are two layers to AI:
 
 > *"We don't make AI smarter. We make AI systems not break."*
 
-## The Solution
+---
 
-Test your agent's tools against edge-cases *before* you deploy them. ToolGuard acts like **unit tests for AI execution**.
+## 🚀 Zero Config — Try It in 60 Seconds
+
+```bash
+pip install py-toolguard
+toolguard run my_agent.py
+```
+
+That's it. ToolGuard auto-discovers your tools, fuzzes them with hallucination attacks (nulls, type mismatches, missing fields), and prints a reliability report. Zero config needed.
+
+```
+🚀 Auto-discovered 3 tools from my_agent.py
+   • fetch_price (2 params)
+   • calculate_position (3 params)
+   • generate_alert (2 params)
+
+🧪 Running 42 fuzz tests...
+
+╔══════════════════════════════════════════════════╗
+║  Reliability Score: my_agent                     ║
+╠══════════════════════════════════════════════════╣
+║  Score:       64.3%                              ║
+║  Risk Level: 🟠 HIGH                             ║
+║  Deploy:     🚫 BLOCK                            ║
+╠══════════════════════════════════════════════════╣
+║  ⚠️  Top Risk: Null values propagating through chain
+║  ⚠️  Bottleneck Tools:
+║    → fetch_price       (50% success)
+║    → generate_alert    (42% success)
+╚══════════════════════════════════════════════════╝
+
+💡 fetch_price: Add null check for 'ticker' — LLM hallucinated None
+💡 generate_alert: Field 'severity' expects int, got str from upstream tool
+```
+
+Or with Python:
 
 ```python
 from toolguard import create_tool, test_chain, score_chain
@@ -42,52 +77,14 @@ def parse_csv(raw_csv: str) -> dict:
     records = [dict(zip(headers, line.split(","))) for line in lines[1:]]
     return {"headers": headers, "records": records, "row_count": len(records)}
 
-@create_tool(schema="auto")
-def compute_statistics(headers: list, records: list, row_count: int) -> dict:
-    # Real computation — mean, median, std dev
-    ...
-
-@create_tool(schema="auto")
-def generate_report(total_rows: int, stats: dict) -> dict:
-    # Real report generation
-    ...
-
-# One line. Full visibility.
 report = test_chain(
-    [parse_csv, compute_statistics, generate_report],
-    base_input={"raw_csv": "name,age,salary\nAlice,30,75000\nBob,35,92000"},
-    test_cases=["happy_path", "null_handling", "malformed_data"],
+    [parse_csv],
+    base_input={"raw_csv": "name,age\nAlice,30\nBob,35"},
+    test_cases=["happy_path", "null_handling", "malformed_data", "type_mismatch", "missing_fields"],
 )
 
 score = score_chain(report)
 print(score.summary())
-```
-
-**Real Output (not mocked):**
-
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║  Reliability Score: parse_csv → compute_statistics → generate_report
-╠═══════════════════════════════════════════════════════════════════╣
-║  Score:       50.0%                                               ║
-║  Risk Level: 🟠 HIGH                                              ║
-║  Deploy:     🚫 BLOCK                                             ║
-║  Confidence:  45.1%                                               ║
-╠═══════════════════════════════════════════════════════════════════╣
-║  ⚠️  Top Risk: Schema validation failures                         ║
-╠═══════════════════════════════════════════════════════════════════╣
-║  Failure Distribution:                                            ║
-║    schema_violation   █████████████░░░░░░░   4 (67%)              ║
-║    type_mismatch      ██████░░░░░░░░░░░░░░   2 (33%)              ║
-╠═══════════════════════════════════════════════════════════════════╣
-║  ⚠️  Bottleneck Tools:                                            ║
-║    → parse_csv       (50% success)                                ║
-╚═══════════════════════════════════════════════════════════════════╝
-
-💡 Suggestion:
-Agent hallucinated payload. Schema mismatch:
-  - Field 'age': Input should be a valid integer (Got: 'thirty' | Type: str)
-  - Field 'salary': Field required (Got: <unknown> | Type: None)
 ```
 
 ---
@@ -105,40 +102,9 @@ It acts like a deterministic fuzzer for AI tool execution, programmatically inje
 2. Null values propagating down the chain
 3. `str` instead of `int`
 4. Massive 10MB payloads to stress your server
-5. Infinite loops
+5. Extra/unexpected fields in JSON
 
 ToolGuard doesn't test if your AI is smart. It tests if your Python code is bulletproof enough to *survive* when your AI does something stupid — running in 1 second and costing $0 in API fees.
-
----
-
-## Quick Start
-
-```bash
-pip install py-toolguard
-```
-
-```python
-from toolguard import create_tool, test_chain
-
-@create_tool(schema="auto")
-def my_tool(query: str) -> dict:
-    return {"result": query.upper()}
-
-report = test_chain(
-    [my_tool],
-    base_input={"query": "hello"},
-    test_cases=["happy_path", "null_handling", "malformed_data"],
-    assert_reliability=0.80,
-)
-```
-
-Or scaffold a full project:
-
-```bash
-toolguard init --name my_agent
-```
-
-**Time to value: < 3 minutes.**
 
 ---
 
@@ -204,43 +170,134 @@ def call_flaky_service(data: dict) -> dict: ...
 
 ### 🖥️ CLI
 ```bash
-toolguard test --chain my_chain.yaml           # Run chain tests
-toolguard test --chain my_chain.yaml --html report.html  # HTML report
-toolguard check --tools my_tools.py            # Check compatibility
-toolguard observe --tools my_tools.py          # View tool stats
-toolguard init --name my_project               # Scaffold project
+toolguard run my_agent.py                          # Zero-config auto-test (NEW!)
+toolguard test --chain my_chain.yaml               # YAML-based chain test
+toolguard test --chain my_chain.yaml --html out.html  # HTML report
+toolguard test --chain my_chain.yaml --junit-xml out.xml  # JUnit XML for CI
+toolguard badge                                    # Generate reliability badge
+toolguard check --tools my_tools.py                # Check compatibility
+toolguard observe --tools my_tools.py              # View tool stats
+toolguard init --name my_project                   # Scaffold project
 ```
 
-### 🔌 Native Framework Integrations
+---
 
-If you are already using **LangChain** or **CrewAI**, you do **not** need to rewrite your tools to use ToolGuard. 
+## 🔌 Native Framework Integrations
 
-ToolGuard provides native adapters that instantly convert your existing framework tools into `GuardedTools` so you can stress-test them immediately.
+ToolGuard works with your existing tools. No rewrites needed — just wrap and fuzz.
 
 ```python
 # 🦜🔗 LangChain
+from langchain_core.tools import tool
 from toolguard.integrations.langchain import guard_langchain_tool
-from my_app import my_langchain_tool
 
-guarded_tool = guard_langchain_tool(my_langchain_tool)
-report = test_chain([guarded_tool], ...)
+@tool
+def search(query: str) -> str:
+    """Search the web."""
+    return f"Results for {query}"
 
-# ⚙️ CrewAI
-from toolguard.integrations.crewai import guard_crewai_tool
-from my_app import my_crew_tool
-
-guarded_tool = guard_crewai_tool(my_crew_tool)
-report = test_chain([guarded_tool], ...)
-
-# 🤖 OpenAI Function Calling
-from toolguard.integrations.openai_func import to_openai_function
-from my_app import my_python_tool
-
-# Instantly export any ToolGuard tool to the strict OpenAI JSON schema format
-openai_schema = to_openai_function(my_python_tool)
+guarded = guard_langchain_tool(search)
+report = test_chain([guarded], base_input={"query": "hello"})
 ```
 
-### 📡 Observability
+```python
+# 🚀 CrewAI
+from crewai.tools import BaseTool
+from toolguard.integrations.crewai import guard_crewai_tool
+
+guarded = guard_crewai_tool(my_crew_tool)
+```
+
+```python
+# 🦙 LlamaIndex
+from llama_index.core.tools import FunctionTool
+from toolguard.integrations.llamaindex import guard_llamaindex_tool
+
+llama_tool = FunctionTool.from_defaults(fn=my_function)
+guarded = guard_llamaindex_tool(llama_tool)
+```
+
+```python
+# 🤖 Microsoft AutoGen
+from autogen_core.tools import FunctionTool
+from toolguard.integrations.autogen import guard_autogen_tool
+
+autogen_tool = FunctionTool(my_function, name="my_tool", description="...")
+guarded = guard_autogen_tool(autogen_tool)
+```
+
+```python
+# 🐝 OpenAI Swarm
+from swarm import Agent
+from toolguard.integrations.swarm import guard_swarm_agent
+
+agent = Agent(name="My Agent", functions=[func_a, func_b])
+guarded_tools = guard_swarm_agent(agent)  # Returns list of GuardedTools
+```
+
+```python
+# ⚡ FastAPI
+from toolguard.integrations.fastapi import as_fastapi_tool
+
+guarded = as_fastapi_tool(my_endpoint_function)
+```
+
+All 6 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
+
+---
+
+## 🏗️ CI/CD Integration
+
+### GitHub Action
+
+Add to any repo — auto-comments on PRs with reliability scores:
+
+```yaml
+# .github/workflows/toolguard.yml
+name: ToolGuard Reliability Check
+on: [pull_request]
+
+jobs:
+  reliability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Harshit-J004/toolguard@v1
+        with:
+          script_path: src/agent.py
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reliability_threshold: "0.95"
+```
+
+**PR Comment Example:**
+> 🚨 **ToolGuard Reliability Check (BLOCKED)**
+>
+> **Chain:** `my_agent`
+> **Reliability Score:** `64.3%` (Threshold: `95%`)
+>
+> Warning: The PR introduces agent fragility. **3 tools will crash** if the LLM hallucinates null.
+
+### JUnit XML (Jenkins / GitLab CI)
+
+```bash
+toolguard test --chain config.yaml --junit-xml results.xml
+```
+
+Generates standard `<testsuites>` XML that Jenkins, GitLab CI, and CircleCI parse natively.
+
+### Reliability Badges
+
+```bash
+toolguard badge
+```
+
+Generates shields.io badge markdown for your README:
+
+![ToolGuard Reliability](https://img.shields.io/badge/ToolGuard-92%25-brightgreen?logo=shield&style=flat-square)
+
+---
+
+## 📡 Observability
 OpenTelemetry tracing out of the box — works with Jaeger, Zipkin, Datadog, and more.
 
 ```python
@@ -269,19 +326,25 @@ toolguard/
 │   ├── tracer.py         # OpenTelemetry integration
 │   └── compatibility.py  # Schema conflict detection
 ├── cli/
-│   └── commands/         # init, test, check, observe
+│   └── commands/         # run, test, check, observe, badge, init
 ├── reporters/
 │   ├── console.py        # Rich terminal output
-│   └── html.py           # Standalone HTML reports
+│   ├── html.py           # Standalone HTML reports
+│   ├── junit.py          # JUnit XML for Jenkins/GitLab CI
+│   └── github.py         # GitHub PR auto-commenter
 ├── integrations/
 │   ├── langchain.py      # LangChain adapter
 │   ├── crewai.py         # CrewAI adapter
-│   └── openai_func.py    # OpenAI function calling
-├── tests/                # 43 tests (sync + async + storage)
+│   ├── llamaindex.py     # LlamaIndex adapter
+│   ├── autogen.py        # Microsoft AutoGen adapter
+│   ├── swarm.py          # OpenAI Swarm adapter
+│   ├── fastapi.py        # FastAPI middleware
+│   └── openai_func.py    # OpenAI function calling export
+├── tests/                # 50 tests (sync + async + integration)
+├── integration_tests/    # Real-library integration tests
 └── examples/
     ├── weather_chain/              # Working 3-tool example
-    ├── demo_failing_chain/         # Intentionally buggy (aha moment)
-    └── real_world_validation/      # Real CSV pipeline validation
+    └── demo_failing_chain/         # Intentionally buggy (aha moment)
 ```
 
 ---
@@ -294,7 +357,9 @@ toolguard/
 | **Root cause** | "TypeError in line 47" | "Tool A returned null for 'price'" |
 | **Fix guidance** | None | "Add default value OR validate response" |
 | **Confidence** | "It works on my machine" | "92% reliability, LOW risk" |
-| **CI/CD** | Manual testing | `toolguard test` in your pipeline |
+| **CI/CD** | Manual testing | `toolguard run` in your pipeline |
+| **Cost** | $0.10/test (LLM calls) | $0 (deterministic fuzzing) |
+| **Speed** | 30s (API roundtrips) | <1s (local execution) |
 
 ---
 
@@ -305,9 +370,10 @@ toolguard/
 | Core Language | Python 3.11 - 3.13 | Agent ecosystem standard |
 | Schema Validation | Pydantic v2 | 3.5× faster than JSON Schema |
 | Async | Native asyncio | Enterprise-grade concurrency |
-| Testing | pytest (43 tests) | CI/CD native |
+| Testing | pytest (50 tests) | CI/CD native |
 | Observability | OpenTelemetry | Vendor-neutral |
 | CLI | Click + Rich | Beautiful terminal UX |
+| CI/CD | GitHub Actions + JUnit | First-class pipeline support |
 | Distribution | PyPI | `pip install py-toolguard` |
 
 ---
@@ -322,6 +388,6 @@ MIT — use it, fork it, ship it.
 
 **Built to make AI agents actually work in production.**
 
-[GitHub](https://github.com/Harshit-J004/toolguard)
+[GitHub](https://github.com/Harshit-J004/toolguard) · [PyPI](https://pypi.org/project/py-toolguard/)
 
 </div>

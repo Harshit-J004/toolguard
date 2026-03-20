@@ -105,6 +105,22 @@ class GuardedTool:
         self.__qualname__ = getattr(func, "__qualname__", func.__name__)
         self._toolguard_wrapped = True
 
+    @property
+    def name(self) -> str:
+        return self.__name__
+
+    @name.setter
+    def name(self, val: str) -> None:
+        self.__name__ = val
+
+    @property
+    def description(self) -> str:
+        return self.__doc__ or ""
+
+    @description.setter
+    def description(self, val: str) -> None:
+        self.__doc__ = val
+
     # ── Core call path ───────────────────────────────────
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:

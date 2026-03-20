@@ -27,6 +27,12 @@ nav:
     - History & Storage: history.md
     - Observability: observability.md
   - API Reference: api.md
+  - Integrations:
+      - FastAPI: fastapi.md
+      - Microsoft AutoGen: autogen.md
+      - OpenAI Swarm: swarm.md
+      - LlamaIndex: llamaindex.md
+      - Vercel AI SDK: vercel.md
 
 plugins:
   - search

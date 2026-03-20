@@ -2,10 +2,13 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
-build/
 *.egg
 .eggs/
+
+# Build artifacts
+dist/
+build/
+py_toolguard-*/
 
 # Virtual environments
 venv/
@@ -27,12 +30,24 @@ Thumbs.db
 htmlcov/
 .coverage
 
+# Linting / type checking
+.mypy_cache/
+.ruff_cache/
+
 # MkDocs build output
 site/
 
-# Temporary files
+# Temporary / debug files
 *.tmp
 *.log
+*.xml
+*.html
+!docs/**/*.html
+!examples/**/*.html
 
 # ToolGuard local database
 .toolguard/
+
+# Integration test debug output
+integration_tests/*.txt
+integration_tests/*.xml

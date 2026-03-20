@@ -90,6 +90,18 @@ def _load_tools_from_config(config: dict[str, Any], config_dir: Path) -> list:
     default=False,
     help="Don't save results to history database",
 )
+@click.option(
+    "--github-pr",
+    is_flag=True,
+    default=False,
+    help="Post results dynamically as a GitHub PR comment",
+)
+@click.option(
+    "--junit-xml",
+    type=click.Path(),
+    default=None,
+    help="Export results in Jenkins/GitLab JUnit format",
+)
 def test_cmd(
     chain: str,
     reliability: float | None,
@@ -98,6 +110,8 @@ def test_cmd(
     json_output: str | None,
     quiet: bool,
     no_save: bool,
+    github_pr: bool,
+    junit_xml: str | None,
 ) -> None:
     """🧪 Test a tool chain for reliability.
 
@@ -160,6 +174,20 @@ def test_cmd(
     if json_output:
         Path(json_output).write_text(report.to_json(), encoding="utf-8")
         console.print(f"\U0001f4c4 JSON report saved to: [cyan]{json_output}[/]\n")
+
+    # JUnit XML
+    if junit_xml:
+        from toolguard.reporters.junit import generate_junit_xml
+        out_xml = generate_junit_xml(report, junit_xml)
+        if not quiet:
+            console.print(f"✅ JUnit XML saved to: [cyan]{out_xml}[/]\n")
+
+    # GitHub PR Commenting
+    if github_pr:
+        from toolguard.reporters.github import post_pr_comment
+        post_pr_comment(report, threshold)
+        if not quiet:
+            console.print("🚀 Posted reliability report to GitHub PR.\n")
 
     # Auto-save to history database
     if not no_save:

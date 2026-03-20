@@ -1,0 +1,55 @@
+name: "ToolGuard Reliability Check"
+description: "Prevent AI agent crashes by fuzzing tool schemas against LLM hallucinations directly in your PRs."
+author: "Harshit-J004"
+branding:
+  icon: "check-circle"
+  color: "green"
+  
+inputs:
+  script_path:
+    description: "Path to your python script for zero-config auto-discovery (e.g. src/agent.py)"
+    required: false
+  config_path:
+    description: "Path to your ToolGuard YAML config for explicit definitions"
+    required: false
+  github_token:
+    description: "GITHUB_TOKEN for PR commenting"
+    required: true
+  reliability_threshold:
+    description: "Minimum reliability score (0.0 to 1.0) to pass the build"
+    default: "0.95"
+  requirements_file:
+    description: "Path to requirements.txt to install project dependencies"
+    default: "requirements.txt"
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        if [ -f "${{ inputs.requirements_file }}" ]; then
+          pip install -r "${{ inputs.requirements_file }}"
+        fi
+        pip install py-toolguard
+        
+    - name: Run ToolGuard (Zero-Config Script Mode)
+      if: ${{ inputs.script_path != '' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        toolguard run ${{ inputs.script_path }} -r ${{ inputs.reliability_threshold }} --github-pr
+        
+    - name: Run ToolGuard (YAML Config Mode)
+      if: ${{ inputs.config_path != '' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        toolguard test -c ${{ inputs.config_path }} -r ${{ inputs.reliability_threshold }} --github-pr

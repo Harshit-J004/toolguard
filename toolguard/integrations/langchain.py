@@ -44,17 +44,23 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
     if not isinstance(lc_tool, BaseTool):
         raise TypeError(f"Expected a LangChain BaseTool, got {type(lc_tool).__name__}")
 
-    # Extract the tool's function
-    func = lc_tool._run if hasattr(lc_tool, "_run") else lc_tool.invoke
+    # Extract the underlying Python function
+    func = None
+    if hasattr(lc_tool, "func") and callable(lc_tool.func):
+        func = lc_tool.func
+    elif hasattr(lc_tool, "_run"):
+        func = lc_tool._run
+    else:
+        func = lc_tool.invoke
 
-    # Create a wrapper that preserves the tool's metadata
-    @create_tool(schema="auto")
-    def wrapper(**kwargs: Any) -> Any:
-        return func(**kwargs)
-
-    wrapper.__name__ = lc_tool.name  # type: ignore
-    wrapper.__doc__ = lc_tool.description
-    return wrapper
+    # Wrap the extracted function directly
+    guarded = create_tool(schema="auto")(func)
+    
+    # Overwrite with accurate LangChain metadata
+    guarded.name = lc_tool.name
+    guarded.description = lc_tool.description
+    
+    return guarded
 
 
 def langchain_tools_to_chain(tools: list[Any]) -> list[GuardedTool]:

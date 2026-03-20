@@ -37,19 +37,22 @@ def guard_crewai_tool(crewai_tool: Any) -> GuardedTool:
             "Install with: pip install \"py-toolguard[crewai]\""
         )
 
-    # Extract the run function
-    if hasattr(crewai_tool, "_run"):
+    # Extract the underlying Python function
+    func = None
+    if hasattr(crewai_tool, "func") and callable(crewai_tool.func):
+        func = crewai_tool.func
+    elif hasattr(crewai_tool, "_run"):
         func = crewai_tool._run
     elif callable(crewai_tool):
         func = crewai_tool
     else:
         raise TypeError(f"Cannot extract callable from CrewAI tool: {type(crewai_tool).__name__}")
 
-    @create_tool(schema="auto")
-    def wrapper(**kwargs: Any) -> Any:
-        return func(**kwargs)
-
-    tool_name = getattr(crewai_tool, "name", getattr(func, "__name__", "crewai_tool"))
-    wrapper.__name__ = tool_name  # type: ignore
-    wrapper.__doc__ = getattr(crewai_tool, "description", "")
-    return wrapper
+    # Wrap the extracted function directly
+    guarded = create_tool(schema="auto")(func)
+    
+    # Overwrite with accurate CrewAI metadata
+    guarded.name = getattr(crewai_tool, "name", getattr(func, "__name__", "crewai_tool"))
+    guarded.description = getattr(crewai_tool, "description", "")
+    
+    return guarded
