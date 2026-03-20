@@ -343,6 +343,11 @@ toolguard/
 │   ├── retry.py          # RetryPolicy + CircuitBreaker
 │   ├── tracer.py         # OpenTelemetry integration
 │   └── compatibility.py  # Schema conflict detection
+├── alerts/
+│   ├── manager.py        # Abstract ThreadPool dispatcher
+│   ├── slack.py          # Block Kit formatting
+│   ├── discord.py        # Embed formatting
+│   └── datadog.py        # HTTP Metrics + Events sink
 ├── cli/
 │   └── commands/         # run, test, check, observe, badge, init
 ├── reporters/
@@ -361,6 +366,7 @@ toolguard/
 ├── tests/                # 50 tests (sync + async + integration)
 ├── integration_tests/    # Real-library integration tests
 └── examples/
+    ├── test_alerts.py              # Phase 4 webhook crash simulation
     ├── weather_chain/              # Working 3-tool example
     └── demo_failing_chain/         # Intentionally buggy (aha moment)
 ```
