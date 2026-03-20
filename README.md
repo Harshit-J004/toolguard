@@ -170,7 +170,8 @@ def call_flaky_service(data: dict) -> dict: ...
 
 ### 🖥️ CLI
 ```bash
-toolguard run my_agent.py                          # Zero-config auto-test (NEW!)
+toolguard run my_agent.py                          # Zero-config auto-test
+toolguard run my_agent.py --dashboard              # 🦇 Live immersive TUI control center
 toolguard test --chain my_chain.yaml               # YAML-based chain test
 toolguard test --chain my_chain.yaml --html out.html  # HTML report
 toolguard test --chain my_chain.yaml --junit-xml out.xml  # JUnit XML for CI

@@ -398,6 +398,7 @@ def test_chain(
     assert_reliability: float = 0.95,
     chain_name: str = "",
     save: bool = False,
+    on_progress: Callable[[int, int, ChainRun], None] | None = None,
 ) -> ChainTestReport:
     """Test a tool chain end-to-end for reliability.
 
@@ -417,22 +418,13 @@ def test_chain(
         assert_reliability: Raise AssertionError if reliability < this threshold.
         chain_name:         Human-readable name for the chain.
         save:               If True, persist results to .toolguard/history.db.
+        on_progress:        Optional live callback (current_iter, total_iters, last_run).
 
     Returns:
         ChainTestReport with detailed results.
 
     Raises:
         AssertionError: If reliability is below the threshold.
-
-    Usage:
-        # Sync tools
-        report = test_chain([get_weather, process], assert_reliability=0.90)
-
-        # Async tools — same API, no changes needed
-        report = test_chain([async_fetch, async_process], assert_reliability=0.90)
-
-        # Auto-save results for historical tracking
-        report = test_chain([tool_a, tool_b], save=True)
     """
 
     # Defaults
@@ -459,9 +451,9 @@ def test_chain(
     use_async = _has_async_tools(chain)
 
     if use_async:
-        runs = _run_async_chain(runner, test_inputs)
+        runs = _run_async_chain(runner, test_inputs, on_progress)
     else:
-        runs = _run_sync_chain(runner, test_inputs)
+        runs = _run_sync_chain(runner, test_inputs, on_progress)
 
     # Build report
     report = ChainTestReport(
@@ -494,18 +486,23 @@ def test_chain(
 def _run_sync_chain(
     runner: ChainRunner,
     test_inputs: list[tuple[str, dict[str, Any]]],
+    on_progress: Callable[[int, int, ChainRun], None] | None = None,
 ) -> list[ChainRun]:
     """Run all test cases synchronously (original path)."""
     runs: list[ChainRun] = []
-    for case_type, input_data in test_inputs:
+    total = len(test_inputs)
+    for i, (case_type, input_data) in enumerate(test_inputs, 1):
         run = runner.run(input_data, test_case_type=case_type)
         runs.append(run)
+        if on_progress:
+            on_progress(i, total, run)
     return runs
 
 
 def _run_async_chain(
     runner: ChainRunner,
     test_inputs: list[tuple[str, dict[str, Any]]],
+    on_progress: Callable[[int, int, ChainRun], None] | None = None,
 ) -> list[ChainRun]:
     """Run all test cases using the async runner.
 
@@ -513,9 +510,12 @@ def _run_async_chain(
     """
     async def _execute_all() -> list[ChainRun]:
         runs: list[ChainRun] = []
-        for case_type, input_data in test_inputs:
+        total = len(test_inputs)
+        for i, (case_type, input_data) in enumerate(test_inputs, 1):
             run = await runner.arun(input_data, test_case_type=case_type)
             runs.append(run)
+            if on_progress:
+                on_progress(i, total, run)
         return runs
 
     # Use existing event loop if available, otherwise create one

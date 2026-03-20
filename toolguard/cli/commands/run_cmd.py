@@ -145,6 +145,12 @@ def _discover_tools(file_path: Path) -> list:
     default=None,
     help="Export results in Jenkins/GitLab JUnit format",
 )
+@click.option(
+    "--dashboard", "-d",
+    is_flag=True,
+    default=False,
+    help="Launch the live Textual terminal UI control center",
+)
 def run_cmd(
     script: str,
     reliability: float,
@@ -153,6 +159,7 @@ def run_cmd(
     quiet: bool,
     github_pr: bool,
     junit_xml: str | None,
+    dashboard: bool,
 ) -> None:
     """🚀 Zero-config auto-test a Python script.
     
@@ -161,7 +168,7 @@ def run_cmd(
     """
     path = Path(script)
     
-    if not quiet:
+    if not quiet and not dashboard:
         console.print(f"\n🚀 [bold]Auto-Discovering tools in:[/] [cyan]{path.name}[/]")
     
     tools = _discover_tools(path)
@@ -171,8 +178,21 @@ def run_cmd(
         console.print("Decorate your functions with [bold]@create_tool[/] to test them.")
         raise SystemExit(0)
         
-    if not quiet:
+    if not quiet and not dashboard:
         console.print(f"   Found [bold green]{len(tools)}[/] tools: {', '.join(getattr(t, 'name', t.__name__) for t in tools)}\n")
+        
+    # --- LAUNCH DASHBOARD IF FLAG PROVIDED ---
+    if dashboard:
+        try:
+            from toolguard.cli.dashboard import ToolGuardDashboard
+        except ImportError:
+            console.print("[red]❌ The `textual` package is missing. Run: pip install textual[/]")
+            raise SystemExit(1)
+            
+        app = ToolGuardDashboard(target_script=path.name, chain=tools)
+        app.run()
+        raise SystemExit(0)
+    # -----------------------------------------
         
     try:
         report = test_chain(
