@@ -110,6 +110,14 @@ ToolGuard doesn't test if your AI is smart. It tests if your Python code is bull
 
 ## Features
 
+### 🛡️ Layer-2 Security Firewall (V3.0)
+ToolGuard features an impenetrable execution-layer security framework protecting production servers from critical LLM exploits.
+
+- **Human-in-the-Loop Risk Tiers:** Mark destructive tools with `@create_tool(risk_tier=2)`. ToolGuard mathematically intercepts these calls and natively streams terminal approval prompts before execution, gracefully protecting `asyncio` event loops and headless daemon environments.
+- **Recursive Prompt Injection Fuzzing:** The `test_chain` fuzzer automatically injects `[SYSTEM OVERRIDE]` execution payloads into your pipelines. A bespoke recursive depth-first memory parser scans internal custom object serialization, byte arrays, and `.casefold()` string mutations to eliminate zero-day blind spots.
+- **Golden Traces (DAG Instrumentation):** With two lines of code (`with TraceTracker() as trace:`), ToolGuard natively intercepts Python `contextvars` to construct a chronologically perfect Directed Acyclic Graph of all tools orchestrated by LangChain, CrewAI, Swarm, and AutoGen.
+- **Non-Deterministic Verification:** Punishing an AI for self-correcting is an anti-pattern. Developers use `trace.assert_sequence(["auth", "refund"])` to mathematically enforce mandatory compliance checkpoints while permitting the LLM complete freedom to autonomously select supplementary network tools.
+
 ### 🔍 Schema Validation
 Automatic Pydantic input/output validation from type hints. No manual schemas needed.
 
