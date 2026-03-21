@@ -38,8 +38,8 @@ def guard_autogen_tool(tool: Any) -> GuardedTool:
     if not func:
         raise ValueError("AutoGen tool does not have an underlying ._func to wrap.")
 
-    name = tool.name
-    desc = tool.description
+    name = getattr(tool, "name", getattr(func, "__name__", "autogen_tool"))
+    desc = getattr(tool, "description", "")
 
     # Wrap the extracted function in a GuardedTool
     guarded = create_tool(schema="auto")(func)

@@ -59,7 +59,7 @@ def info_cmd() -> None:
     print_banner()
     click.echo(f"  Version: {__version__}")
     click.echo("  Docs:    https://toolguard.dev")
-    click.echo("  GitHub:  https://github.com/toolguard/toolguard")
+    click.echo("  GitHub:  https://github.com/Harshit-J004/toolguard")
     click.echo()
 
 
