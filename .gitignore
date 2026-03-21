@@ -51,3 +51,10 @@ site/
 # Integration test debug output
 integration_tests/*.txt
 integration_tests/*.xml
+
+# Local announcements (not for public repo)
+*_announcement.txt
+release_announcement.txt
+
+# Temporary verification scripts
+examples/verify_*.py
