@@ -149,8 +149,9 @@ class ChainTestReport:
         # Coverage analytics
         self.tested_categories = {run.test_case_type for run in runs}
         all_cats = {"happy_path", "null_handling", "malformed_data", "empty_input", 
-                    "type_mismatch", "large_payload", "missing_fields", "extra_fields"}
-        self.coverage_percent = len(self.tested_categories) / len(all_cats) if all_cats else 0.0
+                    "type_mismatch", "large_payload", "missing_fields", "extra_fields",
+                    "prompt_injection"}
+        self.coverage_percent = len(self.tested_categories & all_cats) / len(all_cats) if all_cats else 0.0
         self.untested_categories = sorted(list(all_cats - self.tested_categories))
 
         # Failure analytics
