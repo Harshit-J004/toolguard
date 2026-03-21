@@ -17,6 +17,8 @@ Usage:
 __version__ = "0.1.0"
 __author__ = "ToolGuard Contributors"
 
+import typing
+
 # Core API — the public surface that users import
 from toolguard.core.chain import ChainRunner, test_chain
 from toolguard.core.errors import (
@@ -69,4 +71,15 @@ __all__ = [
     "ToolTimeoutError",
     "CircuitBreakerOpenError",
     "CompatibilityError",
+    "quick_check",
 ]
+
+def quick_check(tool: typing.Callable, test_cases: typing.Sequence[str] | None = None, iterations: int = 2) -> None:
+    """⚡ Minimal zero-config test for a single tool.
+    
+    Instantly runs a tool against the fuzzer and prints a Rich report
+    to the console. This is the fastest way to test a tool in a Jupyter Notebook.
+    """
+    from toolguard.reporters.console import print_chain_report
+    report = test_chain([tool], test_cases=test_cases, iterations=iterations, assert_reliability=0.0)
+    print_chain_report(report)

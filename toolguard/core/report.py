@@ -24,6 +24,7 @@ class StepResult:
     tool_name: str
     success: bool
     input_data: Any = None
+    raw_input: Any = None
     output_data: Any = None
     error: str | None = None
     error_type: str | None = None
@@ -144,6 +145,13 @@ class ChainTestReport:
         self.passed = sum(1 for r in runs if r.success)
         self.failed = self.total_tests - self.passed
         self.reliability = self.passed / self.total_tests if self.total_tests else 0.0
+
+        # Coverage analytics
+        self.tested_categories = {run.test_case_type for run in runs}
+        all_cats = {"happy_path", "null_handling", "malformed_data", "empty_input", 
+                    "type_mismatch", "large_payload", "missing_fields", "extra_fields"}
+        self.coverage_percent = len(self.tested_categories) / len(all_cats) if all_cats else 0.0
+        self.untested_categories = sorted(list(all_cats - self.tested_categories))
 
         # Failure analytics
         self.failure_analyses = self._analyze_failures()
@@ -275,6 +283,8 @@ class ChainTestReport:
             "passed": self.passed,
             "failed": self.failed,
             "reliability": self.reliability,
+            "coverage_percent": self.coverage_percent,
+            "untested_categories": self.untested_categories,
             "reliability_threshold": self.reliability_threshold,
             "passed_threshold": self.passed_threshold,
             "tool_names": self.tool_names,

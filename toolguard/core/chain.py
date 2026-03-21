@@ -237,6 +237,7 @@ class ChainRunner:
                     tool_name=tool_name,
                     success=True,
                     input_data=self._safe_snapshot(current_data),
+                    raw_input=self._safe_deepcopy(current_data),
                     output_data=self._safe_snapshot(result),
                     latency_ms=latency,
                     correlation_id=correlation_id,
@@ -252,6 +253,7 @@ class ChainRunner:
                     tool_name=tool_name,
                     success=False,
                     input_data=self._safe_snapshot(current_data),
+                    raw_input=self._safe_deepcopy(current_data),
                     output_data=None,
                     error=str(exc),
                     error_type=type(exc).__name__,
@@ -285,6 +287,13 @@ class ChainRunner:
             return s[:500] if len(s) > 500 else s
         except Exception:
             return "<unserializable>"
+
+    @staticmethod
+    def _safe_deepcopy(data: Any) -> Any:
+        try:
+            return copy.deepcopy(data)
+        except Exception:
+            return data
 
     @staticmethod
     def _is_tool_async(tool: Callable) -> bool:
@@ -334,6 +343,7 @@ class ChainRunner:
                     tool_name=tool_name,
                     success=True,
                     input_data=self._safe_snapshot(current_data),
+                    raw_input=self._safe_deepcopy(current_data),
                     output_data=self._safe_snapshot(result),
                     latency_ms=latency,
                     correlation_id=correlation_id,
@@ -349,6 +359,7 @@ class ChainRunner:
                     tool_name=tool_name,
                     success=False,
                     input_data=self._safe_snapshot(current_data),
+                    raw_input=self._safe_deepcopy(current_data),
                     output_data=None,
                     error=str(exc),
                     error_type=type(exc).__name__,

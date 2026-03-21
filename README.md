@@ -162,6 +162,26 @@ if score.deploy_recommendation.value == "BLOCK":
     sys.exit(1)  # CI/CD gate
 ```
 
+### ⏪ Local Crash Replay
+When a remote tool crashes in production or tests, ToolGuard automatically dumps the structured JSON payload. You can instantly replay the exact crashing state locally to view the stack trace.
+
+```bash
+toolguard run my_agent.py --dump-failures
+toolguard replay .toolguard/failures/fail_1774068587_0.json
+```
+
+### 🎯 Edge-Case Test Coverage
+ToolGuard gives you PyTest-style coverage metrics. Instead of arbitrary line-coverage, it calculates exactly what percentage of the 8 known LLM hallucination categories (nulls, missing fields, type mismatches, etc.) your tests successfully covered, and lists what is untested.
+
+### ⚡ The Minimal API
+For rapid Jupyter Notebook testing and quick demos, use the highly portable 1-line Python wrapper.
+
+```python
+from toolguard import quick_check
+
+quick_check(my_agent_function, test_cases=["happy_path", "null_handling"])
+```
+
 ### 🔄 Retry & Circuit Breaker
 Production-grade resilience patterns built-in.
 

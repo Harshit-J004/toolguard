@@ -1,0 +1,51 @@
+# 🚀 ToolGuard v1.x: The "Enterprise Production" Update is Live!
+
+I am thrilled to announce the biggest and most important update to ToolGuard yet.
+
+If you are building autonomous agents, your biggest fear shouldn't be whether the LLM is "smart enough"—it should be whether your system will crash at 3 AM because the LLM hallucinated a bad JSON payload.
+
+With this update, ToolGuard transitions from a local testing utility into a **production-grade reliability standard** for AI agent tool chains. We don't make your AI smarter; we make sure your Python code mathematically survives when your AI does something stupid.
+
+Here is what just shipped:
+
+### 1. 📡 Production Observability (Zero-Latency Alerts)
+We built a crash-proof safety net for live production deployments. When your LLM hallucinates a bad dictionary key that fails schema validation, `GuardedTool` now natively intercepts the error *before* it silently crashes downstream APIs. 
+
+It instantly spawns a background thread (adding **0ms latency** to your agent's main transaction) and fires a rich alert so your team knows about the hallucination before your customers do.
+* **Slack & Discord:** Rich, color-coded block-kit messages containing the exact LLM JSON diff.
+* **Datadog:** Native HTTP emission of `toolguard.agent.tool_failure` counters and full stack-trace logs.
+
+### 2. ⚡ Zero-Config Auto-Discovery (`toolguard run`)
+You no longer need to write YAML config files to test your agents locally. Just run `toolguard run my_agent.py` in your terminal!
+ToolGuard will automatically parse your file, discover all your tools, hammer them with 40+ hallucination fuzz attacks (null injection, malformed strings, type mismatches), and print a quantified reliability score right in your terminal.
+
+### 3. 🦇 Immersive Live Dashboard
+When testing locally, you don't have to stare at basic print logs. By passing `--dashboard`, ToolGuard launches a stunning, high-contrast, dark-mode terminal UI built on Textual. It streams live concurrent fuzzing results as they happen, calculates metrics in realtime, and tracks exactly which functions crash under payload injection—all encapsulated in a dedicated hacker-style "Mission Control" interface.
+
+### 4. 🔌 Native Framework Integrations & Vercel
+ToolGuard now officially integrates with the exact frameworks enterprise teams are actually using. Zero rewrites required—just wrap your existing tools and test them natively:
+* **LangChain** (`@tool`)
+* **CrewAI** (`BaseTool`)
+* **LlamaIndex** (`FunctionTool`)
+* **Microsoft AutoGen** (`FunctionTool`)
+* **OpenAI Swarm** (`Agent`)
+* **FastAPI** (Middleware)
+* **Vercel AI SDK** (Official HTTP Backend Guide for exposing Python core tools safely to Next.js Edge runtimes)
+
+### 5. 🏗️ The CI/CD "Trojan Horse"
+ToolGuard now plugs directly into your DevOps pipeline to automatically block developers from merging fragile agent code:
+* **GitHub PR Auto-Commenter:** Automatically comments on your PRs identifying exactly which tool failed the reliability threshold and why.
+* **JUnit XML Output:** Jenkins, GitLab CI, and CircleCI can now natively ingest ToolGuard reports. 
+* **Dynamic Reliability Badges:** Show off your agent's stability with a generated README badge.
+
+### 6. 🧹 100% Authentic Testing (Zero Mocks)
+We did a deep audit of the repository and **deleted every single legacy mock test**. ToolGuard's integration suite now runs exclusively against the *actual* PyPI codebase implementations of LangChain, AutoGen, Swarm, FastAPI, and CrewAI. There is absolutely no faked compatibility—it is mathematically proven against the live libraries.
+
+---
+
+**Try it out in 60 seconds:**
+Run `pip install py-toolguard` in your terminal.
+
+Check out the fully rewritten Architecture and Documentation here: https://github.com/Harshit-J004/toolguard
+
+Drop any feedback, feature requests, or bugs below! 👇

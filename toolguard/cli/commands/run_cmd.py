@@ -151,6 +151,12 @@ def _discover_tools(file_path: Path) -> list:
     default=False,
     help="Launch the live Textual terminal UI control center",
 )
+@click.option(
+    "--dump-failures",
+    is_flag=True,
+    default=False,
+    help="Auto-save crash payloads to .toolguard/failures/ for local replay",
+)
 def run_cmd(
     script: str,
     reliability: float,
@@ -160,6 +166,7 @@ def run_cmd(
     github_pr: bool,
     junit_xml: str | None,
     dashboard: bool,
+    dump_failures: bool,
 ) -> None:
     """🚀 Zero-config auto-test a Python script.
     
@@ -229,6 +236,32 @@ def run_cmd(
         post_pr_comment(report, reliability)
         if not quiet:
             console.print("🚀 Posted reliability report to GitHub PR.\n")
+
+    # Dump failures for local replay
+    if dump_failures and report.failed > 0:
+        import time
+        import json
+        fail_dir = Path.cwd() / ".toolguard" / "failures"
+        fail_dir.mkdir(parents=True, exist_ok=True)
+        dumped_count = 0
+        timestamp = int(time.time())
+        for r_idx, run in enumerate(report.runs):
+            if not run.success and run.failed_step:
+                fs = run.failed_step
+                fail_doc = {
+                    "tool_path": str(path.resolve()),
+                    "tool_name": fs.tool_name,
+                    "error_type": fs.error_type,
+                    "error_message": fs.error,
+                    "payload": fs.raw_input
+                }
+                out_path = fail_dir / f"fail_{timestamp}_{r_idx}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(fail_doc, f, indent=2)
+                dumped_count += 1
+        
+        if not quiet and dumped_count > 0:
+            console.print(f"💾 Dumped [bold red]{dumped_count}[/] crash payloads to [cyan].toolguard/failures/[/] for replay.\n")
         
     if report.reliability < reliability:
         if quiet:

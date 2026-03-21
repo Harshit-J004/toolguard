@@ -66,12 +66,23 @@ def print_chain_report(report: ChainTestReport) -> None:
         f"[bold {status_color}]{report.reliability:.1%}[/]"
     )
     summary.add_row(
+        "Coverage",
+        f"[bold {'green' if report.coverage_percent == 1.0 else 'yellow'}]{report.coverage_percent:.0%}[/]"
+    )
+    summary.add_row(
         "Threshold",
         f"[dim]{report.reliability_threshold:.0%}[/]"
     )
 
     console.print(summary)
     console.print()
+
+    # Untested edge cases
+    if report.untested_categories:
+        console.print("[bold yellow]Untested Edge Cases:[/]")
+        for cat in report.untested_categories:
+            console.print(f"  - {cat}")
+        console.print()
 
     # Failure details
     if report.failure_analyses:
