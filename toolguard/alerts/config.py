@@ -15,6 +15,7 @@ class AlertConfig:
     datadog_api_key: str | None = None
     datadog_site: str = "datadoghq.com"
     generic_webhook_url: str | None = None
+    strip_traceback: bool = False
 
 # Global configuration instance
 _GLOBAL_ALERT_CONFIG = AlertConfig()
@@ -25,12 +26,18 @@ def configure_alerts(
     datadog_api_key: str | None = None,
     datadog_site: str = "datadoghq.com",
     generic_webhook_url: str | None = None,
+    strip_traceback: bool = False,
 ) -> None:
     """Configure the global alerting sinks for ToolGuard in production.
     
     If an LLM hallucinates an invalid JSON payload that fails Pydantic validation 
     inside a GuardedTool, an alert will be dispatched asynchronously to the 
     configured sinks.
+    
+    Args:
+        strip_traceback: If True, removes the full Python stack trace from all 
+            outbound alert payloads. Enable this if any of your webhook endpoints 
+            are public-facing to prevent accidental source code leakage.
     """
     global _GLOBAL_ALERT_CONFIG
     _GLOBAL_ALERT_CONFIG = AlertConfig(
@@ -39,6 +46,7 @@ def configure_alerts(
         datadog_api_key=datadog_api_key,
         datadog_site=datadog_site,
         generic_webhook_url=generic_webhook_url,
+        strip_traceback=strip_traceback,
     )
 
 def get_alert_config() -> AlertConfig:

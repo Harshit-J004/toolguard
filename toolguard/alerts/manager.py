@@ -59,7 +59,7 @@ def dispatch_alert(tool_name: str, payload_attempted: dict, error: Exception) ->
         "tool_name": tool_name,
         "payload": payload_attempted,
         "error_msg": error_msg,
-        "traceback": tb_str,
+        "traceback": tb_str if not config.strip_traceback else "[STRIPPED — enable strip_traceback=False to view]",
         "is_schema_error": is_schema_error,
         "correlation_id": correlation_id,
         "timestamp": timestamp_iso
