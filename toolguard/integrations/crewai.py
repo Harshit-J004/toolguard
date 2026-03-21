@@ -41,8 +41,10 @@ def guard_crewai_tool(crewai_tool: Any) -> GuardedTool:
     func = None
     if hasattr(crewai_tool, "func") and callable(crewai_tool.func):
         func = crewai_tool.func
-    elif hasattr(crewai_tool, "_run"):
+    elif hasattr(crewai_tool, "_run") and not getattr(crewai_tool, "_run").__name__ == "NotImplementedError":
         func = crewai_tool._run
+    elif hasattr(crewai_tool, "_arun"):
+        func = crewai_tool._arun
     elif callable(crewai_tool):
         func = crewai_tool
     else:

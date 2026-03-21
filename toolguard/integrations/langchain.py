@@ -48,10 +48,14 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
     func = None
     if hasattr(lc_tool, "func") and callable(lc_tool.func):
         func = lc_tool.func
-    elif hasattr(lc_tool, "_run"):
+    elif hasattr(lc_tool, "coroutine") and callable(lc_tool.coroutine):
+        func = lc_tool.coroutine
+    elif hasattr(lc_tool, "_run") and not getattr(lc_tool, "_run").__name__ == "NotImplementedError":
         func = lc_tool._run
+    elif hasattr(lc_tool, "_arun"):
+        func = lc_tool._arun
     else:
-        func = lc_tool.invoke
+        func = getattr(lc_tool, "ainvoke", lc_tool.invoke)
 
     # Wrap the extracted function directly
     guarded = create_tool(schema="auto")(func)
