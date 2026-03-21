@@ -89,6 +89,51 @@ class SchemaValidationError(ToolGuardError):
 
 
 # ──────────────────────────────────────────────────────────
+#  Approval & Security Errors
+# ──────────────────────────────────────────────────────────
+
+class ToolGuardApprovalDeniedError(ToolGuardError):
+    """Raised when a human-in-the-loop rejects a Tier 2+ tool execution."""
+
+    def __init__(
+        self,
+        message: str = "Execution blocked by human-in-the-loop approval.",
+        *,
+        tool_name: str = "",
+        risk_tier: int = 0,
+        correlation_id: str | None = None,
+    ) -> None:
+        self.risk_tier = risk_tier
+        super().__init__(
+            message,
+            tool_name=tool_name,
+            correlation_id=correlation_id,
+            suggestion=f"Tool '{tool_name}' requires Tier {risk_tier} interactive approval.",
+        )
+
+
+class ToolGuardTraceMismatchError(ToolGuardError):
+    """Raised when an agent's execution path deviates from the Golden Trace."""
+
+    def __init__(
+        self,
+        message: str = "Execution path deviated from Golden Trace.",
+        *,
+        expected_path: list[str] | None = None,
+        actual_path: list[str] | None = None,
+        correlation_id: str | None = None,
+    ) -> None:
+        self.expected_path = expected_path or []
+        self.actual_path = actual_path or []
+        super().__init__(
+            message,
+            tool_name="TraceTracker",
+            correlation_id=correlation_id,
+            suggestion=f"Agent called {self.actual_path} but you asserted {self.expected_path}.",
+        )
+
+
+# ──────────────────────────────────────────────────────────
 #  Chain Execution Errors
 # ──────────────────────────────────────────────────────────
 

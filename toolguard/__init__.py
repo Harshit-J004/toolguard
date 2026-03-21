@@ -39,6 +39,7 @@ from toolguard.core.scoring import (
     score_chain,
 )
 from toolguard.core.validator import GuardedTool, create_tool
+from toolguard.core.tracer import TraceTracker, TraceLog, ToolGuardTraceMismatchError
 from toolguard.storage import ResultStore
 from toolguard.alerts import configure_alerts
 
@@ -46,6 +47,9 @@ __all__ = [
     # Decorators & wrappers
     "create_tool",
     "GuardedTool",
+    # Golden Traces
+    "TraceTracker",
+    "TraceLog",
     # Chain testing
     "test_chain",
     "ChainRunner",
@@ -71,6 +75,7 @@ __all__ = [
     "ToolTimeoutError",
     "CircuitBreakerOpenError",
     "CompatibilityError",
+    "ToolGuardTraceMismatchError",
     "quick_check",
 ]
 

@@ -20,7 +20,8 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from toolguard.core.errors import SchemaValidationError, _new_correlation_id
+import os
+from toolguard.core.errors import SchemaValidationError, ToolGuardApprovalDeniedError, _new_correlation_id
 from toolguard.core.schema import ToolSchema, auto_generate_input_model, auto_generate_schema
 
 # ──────────────────────────────────────────────────────────
@@ -87,8 +88,10 @@ class GuardedTool:
         input_model: type[BaseModel] | None = None,
         output_model: type[BaseModel] | None = None,
         schema: ToolSchema | None = None,
+        risk_tier: int = 0,
     ) -> None:
         self._func = func
+        self.risk_tier = risk_tier
         self._input_model = input_model
         self._output_model = output_model
         self._sig = inspect.signature(func)
@@ -143,10 +146,47 @@ class GuardedTool:
             # 1. Validate inputs
             validated_kwargs = self._validate_input(*args, **kwargs, _correlation_id=correlation_id)
 
-            # 2. Execute the tool
-            result = self._func(**validated_kwargs)
+            # 2. Human-In-The-Loop Security Check
+            if getattr(self, "risk_tier", 0) >= 2 and os.environ.get("TOOLGUARD_AUTO_APPROVE") != "1":
+                from rich.prompt import Confirm
+                from rich.console import Console
+                Console().print(f"\n[bold red]⚠️  SECURITY WARNING: Agent attempting Tier {self.risk_tier} action![/bold red]")
+                Console().print(f"[yellow]Tool:[/yellow] {self.__name__}")
+                Console().print(f"[yellow]Payload:[/yellow] {validated_kwargs}")
+                
+                try:
+                    approved = Confirm.ask("[bold red]Allow Execution?[/bold red]")
+                except EOFError:
+                    approved = False  # Auto-deny if running in background daemon/Docker without TTY
+                    
+                if not approved:
+                    raise ToolGuardApprovalDeniedError(
+                        f"Human rejected Tier {self.risk_tier} execution of '{self.__name__}'",
+                        tool_name=self.__name__,
+                        risk_tier=self.risk_tier,
+                        correlation_id=correlation_id,
+                    )
 
-            # 3. Validate output
+            # 3. Golden Trace Telemetry Intercept (ENTRY)
+            from toolguard.core.tracer import get_active_tracer
+            tracker = get_active_tracer()
+            trace_node = None
+            if tracker:
+                # Appending the Node precisely at ENTRY guarantees perfect chronological execution graphs
+                trace_node = tracker.record_entry(self.__name__, validated_kwargs)
+
+            # 4. Execute the tool
+            result = None
+            try:
+                result = self._func(**validated_kwargs)
+            except Exception as e:
+                result = f"<Exception: {type(e).__name__}>"
+                raise
+            finally:
+                if trace_node and tracker:
+                    tracker.record_exit(trace_node, result)
+
+            # 5. Validate output
             result = self._validate_output(result, _correlation_id=correlation_id)
 
             # 4. Record success
@@ -177,10 +217,51 @@ class GuardedTool:
             # 1. Validate inputs (always synchronous — Pydantic is sync)
             validated_kwargs = self._validate_input(*args, **kwargs, _correlation_id=correlation_id)
 
-            # 2. Execute the async tool
-            result = await self._func(**validated_kwargs)
+            # 2. Human-In-The-Loop Security Check
+            if getattr(self, "risk_tier", 0) >= 2 and os.environ.get("TOOLGUARD_AUTO_APPROVE") != "1":
+                from rich.prompt import Confirm
+                from rich.console import Console
+                import asyncio
 
-            # 3. Validate output (always synchronous)
+                Console().print(f"\n[bold red]⚠️  SECURITY WARNING: Agent attempting Tier {self.risk_tier} action![/bold red]")
+                Console().print(f"[yellow]Tool:[/yellow] {self.__name__}")
+                Console().print(f"[yellow]Payload:[/yellow] {validated_kwargs}")
+                
+                def _ask_confirm():
+                    try:
+                        return Confirm.ask("[bold red]Allow Execution?[/bold red]")
+                    except EOFError:
+                        return False # Auto-deny if no TTY terminal is attached
+                    
+                approved = await asyncio.to_thread(_ask_confirm)
+                
+                if not approved:
+                    raise ToolGuardApprovalDeniedError(
+                        f"Human rejected Tier {self.risk_tier} execution of '{self.__name__}'",
+                        tool_name=self.__name__,
+                        risk_tier=self.risk_tier,
+                        correlation_id=correlation_id,
+                    )
+
+            # 3. Golden Trace Telemetry Intercept (ENTRY)
+            from toolguard.core.tracer import get_active_tracer
+            tracker = get_active_tracer()
+            trace_node = None
+            if tracker:
+                trace_node = tracker.record_entry(self.__name__, validated_kwargs)
+
+            # 4. Execute the async tool
+            result = None
+            try:
+                result = await self._func(**validated_kwargs)
+            except Exception as e:
+                result = f"<Exception: {type(e).__name__}>"
+                raise
+            finally:
+                if trace_node and tracker:
+                    tracker.record_exit(trace_node, result)
+
+            # 5. Validate output (always synchronous)
             result = self._validate_output(result, _correlation_id=correlation_id)
 
             # 4. Record success
@@ -300,6 +381,7 @@ def create_tool(
     input_model: type[BaseModel] | None = None,
     output_model: type[BaseModel] | None = None,
     version: str = "1.0.0",
+    risk_tier: int = 0,
 ) -> Callable[[Callable], GuardedTool]:
     """Decorator that wraps a function with ToolGuard validation.
 
@@ -334,6 +416,7 @@ def create_tool(
             input_model=resolved_input,
             output_model=output_model,
             schema=tool_schema,
+            risk_tier=risk_tier,
         )
 
     return decorator
