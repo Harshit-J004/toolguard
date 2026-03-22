@@ -1,0 +1,438 @@
+{
+  "chain_name": "autogpt_web_search",
+  "total_tests": 24,
+  "passed": 18,
+  "failed": 6,
+  "reliability": 0.75,
+  "coverage_percent": 0.5555555555555556,
+  "untested_categories": [
+    "empty_input",
+    "extra_fields",
+    "missing_fields",
+    "prompt_injection"
+  ],
+  "reliability_threshold": 0.0,
+  "passed_threshold": true,
+  "tool_names": [
+    "autogpt_web_search"
+  ],
+  "top_failures": [
+    {
+      "tool_name": "autogpt_web_search",
+      "error_type": "SchemaValidationError",
+      "count": 6,
+      "root_cause": "autogpt_web_search received or returned null/None value",
+      "suggestion": "Add null check: if data is None: return default_value(). Or add a default in autogpt_web_search's output schema."
+    }
+  ],
+  "runs": [
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.77,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.74,
+          "correlation_id": "5d37bee65380"
+        }
+      ],
+      "correlation_id": "5d37bee65380"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.09,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.07,
+          "correlation_id": "7a2901c6d08f"
+        }
+      ],
+      "correlation_id": "7a2901c6d08f"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "a582a8b054dd"
+        }
+      ],
+      "correlation_id": "a582a8b054dd"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "b76bc2de8ecd"
+        }
+      ],
+      "correlation_id": "b76bc2de8ecd"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "da3508c635b2"
+        }
+      ],
+      "correlation_id": "da3508c635b2"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "7cc11b3c68e8"
+        }
+      ],
+      "correlation_id": "7cc11b3c68e8"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "ee44f8113b4b"
+        }
+      ],
+      "correlation_id": "ee44f8113b4b"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "d46ef57e168c"
+        }
+      ],
+      "correlation_id": "d46ef57e168c"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "579ac2663366"
+        }
+      ],
+      "correlation_id": "579ac2663366"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "9266c33039de"
+        }
+      ],
+      "correlation_id": "9266c33039de"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "41a86b6e2864"
+        }
+      ],
+      "correlation_id": "41a86b6e2864"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "f15c9582b81e"
+        }
+      ],
+      "correlation_id": "f15c9582b81e"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "6d0f621d54a0"
+        }
+      ],
+      "correlation_id": "6d0f621d54a0"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "3419ceac9903"
+        }
+      ],
+      "correlation_id": "3419ceac9903"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "b7ebe5737c0f"
+        }
+      ],
+      "correlation_id": "b7ebe5737c0f"
+    },
+    {
+      "success": false,
+      "test_case": "null_handling",
+      "total_latency_ms": 0.32,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": false,
+          "error": "Input validation failed for 'autogpt_web_search'\n  Tool: autogpt_web_search\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'query': Input should be a valid string (Got: None | Type: NoneType)\n  Correlation ID: 48e7b388e53a",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.3,
+          "correlation_id": "019109a2c79d"
+        }
+      ],
+      "correlation_id": "019109a2c79d"
+    },
+    {
+      "success": false,
+      "test_case": "null_handling",
+      "total_latency_ms": 0.3,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": false,
+          "error": "Input validation failed for 'autogpt_web_search'\n  Tool: autogpt_web_search\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'num_results': Input should be a valid integer (Got: None | Type: NoneType)\n  Correlation ID: 4bee8348a86a",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.29,
+          "correlation_id": "06e3e58230ec"
+        }
+      ],
+      "correlation_id": "06e3e58230ec"
+    },
+    {
+      "success": false,
+      "test_case": "null_handling",
+      "total_latency_ms": 0.05,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": false,
+          "error": "Input binding failed for 'autogpt_web_search': missing a required argument: 'query'\n  Tool: autogpt_web_search\n  \ud83d\udca1 Suggestion: The agent passed arguments that don't match autogpt_web_search's signature. Expected: (query: str, num_results: int = 8) -> str. Error: missing a required argument: 'query'\n  Correlation ID: e5921eaf9919",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.04,
+          "correlation_id": "4fc1eae2f823"
+        }
+      ],
+      "correlation_id": "4fc1eae2f823"
+    },
+    {
+      "success": false,
+      "test_case": "malformed_data",
+      "total_latency_ms": 0.04,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": false,
+          "error": "Input validation failed for 'autogpt_web_search'\n  Tool: autogpt_web_search\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'query': Input should be a valid string (Got: 12345 | Type: int)\n  Correlation ID: 23eb5ea152a8",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.03,
+          "correlation_id": "6d27377cb498"
+        }
+      ],
+      "correlation_id": "6d27377cb498"
+    },
+    {
+      "success": false,
+      "test_case": "malformed_data",
+      "total_latency_ms": 0.04,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": false,
+          "error": "Input validation failed for 'autogpt_web_search'\n  Tool: autogpt_web_search\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'num_results': Input should be a valid integer, unable to parse string as an integer (Got: 'not_a_number' | Type: str)\n  Correlation ID: 2a2f77caa90d",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.03,
+          "correlation_id": "cafa6ec03849"
+        }
+      ],
+      "correlation_id": "cafa6ec03849"
+    },
+    {
+      "success": false,
+      "test_case": "type_mismatch",
+      "total_latency_ms": 0.04,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": false,
+          "error": "Input validation failed for 'autogpt_web_search'\n  Tool: autogpt_web_search\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'query': Input should be a valid string (Got: ['test_input'] | Type: list)\n  Correlation ID: 0df2b0068ce1",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.03,
+          "correlation_id": "cf5670c40176"
+        }
+      ],
+      "correlation_id": "cf5670c40176"
+    },
+    {
+      "success": true,
+      "test_case": "type_mismatch",
+      "total_latency_ms": 0.2,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.19,
+          "correlation_id": "1aa150232f53"
+        }
+      ],
+      "correlation_id": "1aa150232f53"
+    },
+    {
+      "success": true,
+      "test_case": "large_payload",
+      "total_latency_ms": 0.29,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.03,
+          "correlation_id": "fb20c19ce03e"
+        }
+      ],
+      "correlation_id": "fb20c19ce03e"
+    },
+    {
+      "success": true,
+      "test_case": "large_payload",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "autogpt_web_search",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "f37b9e4edcc4"
+        }
+      ],
+      "correlation_id": "f37b9e4edcc4"
+    }
+  ]
+}

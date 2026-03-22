@@ -1,0 +1,660 @@
+{
+  "chain_name": "calculate_discount",
+  "total_tests": 37,
+  "passed": 32,
+  "failed": 5,
+  "reliability": 0.8648648648648649,
+  "coverage_percent": 0.4444444444444444,
+  "untested_categories": [
+    "empty_input",
+    "extra_fields",
+    "large_payload",
+    "missing_fields",
+    "prompt_injection"
+  ],
+  "reliability_threshold": 0.0,
+  "passed_threshold": true,
+  "tool_names": [
+    "calculate_discount"
+  ],
+  "top_failures": [
+    {
+      "tool_name": "calculate_discount",
+      "error_type": "SchemaValidationError",
+      "count": 5,
+      "root_cause": "calculate_discount received or returned null/None value",
+      "suggestion": "Add null check: if data is None: return default_value(). Or add a default in calculate_discount's output schema."
+    }
+  ],
+  "runs": [
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 1.0,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.95,
+          "correlation_id": "b173b5e736a8"
+        }
+      ],
+      "correlation_id": "b173b5e736a8"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.08,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.06,
+          "correlation_id": "4e10c1814fc8"
+        }
+      ],
+      "correlation_id": "4e10c1814fc8"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.04,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.03,
+          "correlation_id": "418425292186"
+        }
+      ],
+      "correlation_id": "418425292186"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.03,
+          "correlation_id": "344420dd4a11"
+        }
+      ],
+      "correlation_id": "344420dd4a11"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "404ba2db2bb9"
+        }
+      ],
+      "correlation_id": "404ba2db2bb9"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "d8b0517327f5"
+        }
+      ],
+      "correlation_id": "d8b0517327f5"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "db5ed7a02c07"
+        }
+      ],
+      "correlation_id": "db5ed7a02c07"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "95e92231f88e"
+        }
+      ],
+      "correlation_id": "95e92231f88e"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "42f98069f790"
+        }
+      ],
+      "correlation_id": "42f98069f790"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "1255b88a69e7"
+        }
+      ],
+      "correlation_id": "1255b88a69e7"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "1cc42ad5042b"
+        }
+      ],
+      "correlation_id": "1cc42ad5042b"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "73ae0df0a561"
+        }
+      ],
+      "correlation_id": "73ae0df0a561"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "d6fc01f34ef5"
+        }
+      ],
+      "correlation_id": "d6fc01f34ef5"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "9a65753fd251"
+        }
+      ],
+      "correlation_id": "9a65753fd251"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "118b9d69b12b"
+        }
+      ],
+      "correlation_id": "118b9d69b12b"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "16fa3b92d994"
+        }
+      ],
+      "correlation_id": "16fa3b92d994"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "5286a332fa05"
+        }
+      ],
+      "correlation_id": "5286a332fa05"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "b186f001b217"
+        }
+      ],
+      "correlation_id": "b186f001b217"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "c59c62d0d87b"
+        }
+      ],
+      "correlation_id": "c59c62d0d87b"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.01,
+          "correlation_id": "f14881067297"
+        }
+      ],
+      "correlation_id": "f14881067297"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.01,
+          "correlation_id": "fbc58a4f6cd9"
+        }
+      ],
+      "correlation_id": "fbc58a4f6cd9"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.01,
+          "correlation_id": "2366b513a4bf"
+        }
+      ],
+      "correlation_id": "2366b513a4bf"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "e32e2966aa7d"
+        }
+      ],
+      "correlation_id": "e32e2966aa7d"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "9ad3d76a931b"
+        }
+      ],
+      "correlation_id": "9ad3d76a931b"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "0c8875c9d069"
+        }
+      ],
+      "correlation_id": "0c8875c9d069"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "57a5d8814445"
+        }
+      ],
+      "correlation_id": "57a5d8814445"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "d303515f56d8"
+        }
+      ],
+      "correlation_id": "d303515f56d8"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.01,
+          "correlation_id": "0ea7da442f34"
+        }
+      ],
+      "correlation_id": "0ea7da442f34"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "d8e960ab1f78"
+        }
+      ],
+      "correlation_id": "d8e960ab1f78"
+    },
+    {
+      "success": true,
+      "test_case": "happy_path",
+      "total_latency_ms": 0.02,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "e472487e31b2"
+        }
+      ],
+      "correlation_id": "e472487e31b2"
+    },
+    {
+      "success": false,
+      "test_case": "null_handling",
+      "total_latency_ms": 0.46,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": false,
+          "error": "Input validation failed for 'calculate_discount'\n  Tool: calculate_discount\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'price': Input should be a valid number (Got: None | Type: NoneType)\n  Correlation ID: 0fe09fe992f8",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.44,
+          "correlation_id": "ee5c47bdfd4b"
+        }
+      ],
+      "correlation_id": "ee5c47bdfd4b"
+    },
+    {
+      "success": false,
+      "test_case": "null_handling",
+      "total_latency_ms": 0.09,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": false,
+          "error": "Input validation failed for 'calculate_discount'\n  Tool: calculate_discount\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'discount_percent': Input should be a valid integer (Got: None | Type: NoneType)\n  Correlation ID: d99ae0a219e9",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.07,
+          "correlation_id": "14e3f4b610fd"
+        }
+      ],
+      "correlation_id": "14e3f4b610fd"
+    },
+    {
+      "success": false,
+      "test_case": "null_handling",
+      "total_latency_ms": 0.05,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": false,
+          "error": "Input binding failed for 'calculate_discount': missing a required argument: 'price'\n  Tool: calculate_discount\n  \ud83d\udca1 Suggestion: The agent passed arguments that don't match calculate_discount's signature. Expected: (price: float, discount_percent: int) -> str. Error: missing a required argument: 'price'\n  Correlation ID: ac9746e880b4",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.04,
+          "correlation_id": "e5bf3330af48"
+        }
+      ],
+      "correlation_id": "e5bf3330af48"
+    },
+    {
+      "success": false,
+      "test_case": "malformed_data",
+      "total_latency_ms": 0.05,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": false,
+          "error": "Input validation failed for 'calculate_discount'\n  Tool: calculate_discount\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'price': Input should be a valid number, unable to parse string as a number (Got: 'not_a_number' | Type: str)\n  Correlation ID: 7f9ce852f412",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.03,
+          "correlation_id": "aaf6c612b722"
+        }
+      ],
+      "correlation_id": "aaf6c612b722"
+    },
+    {
+      "success": false,
+      "test_case": "malformed_data",
+      "total_latency_ms": 0.04,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": false,
+          "error": "Input validation failed for 'calculate_discount'\n  Tool: calculate_discount\n  \ud83d\udca1 Suggestion: Agent hallucinated payload. Schema mismatch:\n  - Field 'discount_percent': Input should be a valid integer, unable to parse string as an integer (Got: 'not_a_number' | Type: str)\n  Correlation ID: 277487b8a8b2",
+          "error_type": "SchemaValidationError",
+          "latency_ms": 0.02,
+          "correlation_id": "c763700f348a"
+        }
+      ],
+      "correlation_id": "c763700f348a"
+    },
+    {
+      "success": true,
+      "test_case": "type_mismatch",
+      "total_latency_ms": 0.03,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.02,
+          "correlation_id": "b0aeee13eeff"
+        }
+      ],
+      "correlation_id": "b0aeee13eeff"
+    },
+    {
+      "success": true,
+      "test_case": "type_mismatch",
+      "total_latency_ms": 0.23,
+      "steps": [
+        {
+          "step": 1,
+          "tool_name": "calculate_discount",
+          "success": true,
+          "error": null,
+          "error_type": null,
+          "latency_ms": 0.22,
+          "correlation_id": "278a994960dd"
+        }
+      ],
+      "correlation_id": "278a994960dd"
+    }
+  ]
+}
