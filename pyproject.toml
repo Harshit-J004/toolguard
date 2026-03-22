@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-toolguard"
-version = "0.1.0"
+version = "3.1.0"
 description = "Open-source reliability testing for AI agent tool chains. Catch cascading failures before production."
 readme = "README.md"
 license = {text = "MIT"}
