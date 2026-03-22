@@ -79,12 +79,16 @@ __all__ = [
     "quick_check",
 ]
 
-def quick_check(tool: typing.Callable, test_cases: typing.Sequence[str] | None = None, iterations: int = 2) -> None:
+def quick_check(tool: typing.Callable, test_cases: typing.Sequence[str] | None = None, iterations: int = 2) -> "ChainTestReport":
     """⚡ Minimal zero-config test for a single tool.
     
     Instantly runs a tool against the fuzzer and prints a Rich report
     to the console. This is the fastest way to test a tool in a Jupyter Notebook.
+    
+    Returns:
+        ChainTestReport with detailed results for programmatic inspection.
     """
     from toolguard.reporters.console import print_chain_report
     report = test_chain([tool], test_cases=test_cases, iterations=iterations, assert_reliability=0.0)
     print_chain_report(report)
+    return report

@@ -376,22 +376,24 @@ class GuardedTool:
 # ──────────────────────────────────────────────────────────
 
 def create_tool(
+    _func: Callable | None = None,
     schema: str | dict[str, Any] = "auto",
     *,
     input_model: type[BaseModel] | None = None,
     output_model: type[BaseModel] | None = None,
     version: str = "1.0.0",
     risk_tier: int = 0,
-) -> Callable[[Callable], GuardedTool]:
+) -> Callable[[Callable], GuardedTool] | GuardedTool:
     """Decorator that wraps a function with ToolGuard validation.
 
-    Usage:
-        @create_tool(schema="auto")
-        def get_weather(location: str, units: str = "metric") -> dict:
-            return {"temp": 22.5, "units": units}
+    Supports both bare and parameterized usage:
 
-        @create_tool(output_model=WeatherOutput)
+        @create_tool
         def get_weather(location: str) -> dict:
+            ...
+
+        @create_tool(schema="auto", risk_tier=2)
+        def delete_user(user_id: int) -> dict:
             ...
 
     Args:
@@ -399,6 +401,7 @@ def create_tool(
         input_model:  Explicit Pydantic model for inputs.
         output_model: Explicit Pydantic model for outputs.
         version:      Tool version string.
+        risk_tier:    Risk tier level (0-3) for human-in-the-loop gating.
     """
 
     def decorator(func: Callable) -> GuardedTool:
@@ -418,5 +421,9 @@ def create_tool(
             schema=tool_schema,
             risk_tier=risk_tier,
         )
+
+    # Support bare @create_tool usage (no parentheses)
+    if _func is not None:
+        return decorator(_func)
 
     return decorator
