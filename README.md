@@ -9,7 +9,7 @@ Catch cascading failures before production. Make agent tool calling as predictab
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
-[![Integrations](https://img.shields.io/badge/integrations-6%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
+[![Integrations](https://img.shields.io/badge/integrations-7%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
 
 </div>
 
@@ -281,7 +281,7 @@ from toolguard.integrations.fastapi import as_fastapi_tool
 guarded = as_fastapi_tool(my_endpoint_function)
 ```
 
-All 6 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
+All 7 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
 
 ### 🧹 100% Authentic Testing
 ToolGuard's integration suite runs exclusively against the *actual* PyPI codebase implementations of LangChain, AutoGen, Swarm, FastAPI, and CrewAI. There is absolutely no faked compatibility—it is mathematically proven against the live libraries. We deleted all fake "mock" tests to ensure the standard of reliability is pristine.
