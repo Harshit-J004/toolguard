@@ -500,6 +500,84 @@ class ChainRunner:
 #  test_chain() — the main public API
 # ──────────────────────────────────────────────────────────
 
+def _auto_infer_base_input(chain: Sequence[Callable]) -> dict[str, Any]:
+    """Auto-infer a realistic base_input from the first tool's type hints.
+    
+    When the user doesn't provide base_input (e.g., quick_check(tool)),
+    this inspects the tool's signature to generate sample values so the
+    fuzzer has real fields to mutate (nullify, type-swap, enlarge, etc.).
+    """
+    import inspect as _inspect
+    from typing import get_type_hints as _get_type_hints
+
+    if not chain:
+        return {}
+
+    tool = chain[0]
+
+    # Strategy 1: If it's a GuardedTool with a Pydantic _input_model, use its fields
+    input_model = getattr(tool, '_input_model', None)
+    if input_model is not None:
+        try:
+            fields = input_model.model_fields
+            base: dict[str, Any] = {}
+            for name, field_info in fields.items():
+                base[name] = _sample_value_for_type(field_info.annotation)
+            if base:
+                return base
+        except Exception:
+            pass
+
+    # Strategy 2: Inspect the raw function's type hints
+    raw_func = getattr(tool, '_func', tool)
+    try:
+        sig = _inspect.signature(raw_func)
+        hints = _get_type_hints(raw_func) if hasattr(raw_func, '__annotations__') else {}
+        base = {}
+        for param_name, param in sig.parameters.items():
+            if param_name in ('self', 'cls'):
+                continue
+            annotation = hints.get(param_name, str)  # default to str
+            base[param_name] = _sample_value_for_type(annotation)
+        if base:
+            return base
+    except Exception:
+        pass
+
+    return {}
+
+
+def _sample_value_for_type(annotation: Any) -> Any:
+    """Generate a realistic sample value for a given Python type annotation."""
+    if annotation is None or annotation is type(None):
+        return "test"
+    
+    # Handle Optional[X], Union[X, None], etc.
+    origin = getattr(annotation, '__origin__', None)
+    args = getattr(annotation, '__args__', None)
+    
+    if origin is not None and args:
+        # For Optional[str] / Union[str, None], use the first non-None type
+        non_none = [a for a in args if a is not type(None)]
+        if non_none:
+            return _sample_value_for_type(non_none[0])
+    
+    if annotation is str or annotation == 'str':
+        return "test_input"
+    elif annotation is int or annotation == 'int':
+        return 42
+    elif annotation is float or annotation == 'float':
+        return 3.14
+    elif annotation is bool or annotation == 'bool':
+        return True
+    elif annotation is list or annotation == 'list':
+        return ["item_1", "item_2"]
+    elif annotation is dict or annotation == 'dict':
+        return {"key": "value"}
+    else:
+        return "test_input"  # Safe fallback
+
+
 def _has_async_tools(chain: Sequence[Callable]) -> bool:
     """Check if any tool in the chain is asynchronous."""
     for tool in chain:
@@ -559,7 +637,7 @@ def test_chain(
         ]
 
     if base_input is None:
-        base_input = {}
+        base_input = _auto_infer_base_input(chain)
 
     if not chain_name:
         tool_names = [getattr(t, "__name__", f"tool_{i}") for i, t in enumerate(chain)]

@@ -50,9 +50,16 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
         func = lc_tool.func
     elif hasattr(lc_tool, "coroutine") and callable(lc_tool.coroutine):
         func = lc_tool.coroutine
-    elif hasattr(lc_tool, "_run") and not getattr(lc_tool, "_run").__name__ == "NotImplementedError":
-        func = lc_tool._run
-    elif hasattr(lc_tool, "_arun"):
+    elif hasattr(lc_tool, "_run"):
+        # Check if _run is actually implemented (not just the abstract stub)
+        try:
+            import inspect as _inspect
+            source = _inspect.getsource(lc_tool._run)
+            if "NotImplementedError" not in source:
+                func = lc_tool._run
+        except (TypeError, OSError):
+            func = lc_tool._run  # Can't inspect, assume it's real
+    if func is None and hasattr(lc_tool, "_arun"):
         func = lc_tool._arun
     else:
         func = getattr(lc_tool, "ainvoke", lc_tool.invoke)

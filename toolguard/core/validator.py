@@ -189,7 +189,7 @@ class GuardedTool:
             # 5. Validate output
             result = self._validate_output(result, _correlation_id=correlation_id)
 
-            # 4. Record success
+            # 6. Record success
             latency = (time.perf_counter() - start) * 1000
             self.stats.record_success(latency)
 
@@ -264,7 +264,7 @@ class GuardedTool:
             # 5. Validate output (always synchronous)
             result = self._validate_output(result, _correlation_id=correlation_id)
 
-            # 4. Record success
+            # 6. Record success
             latency = (time.perf_counter() - start) * 1000
             self.stats.record_success(latency)
 
@@ -289,19 +289,29 @@ class GuardedTool:
         self, *args: Any, _correlation_id: str = "", **kwargs: Any
     ) -> dict[str, Any]:
         """Bind positional + keyword args, validate against input model."""
-        if not self._input_model:
-            # No model → just bind args to keyword dict
-            bound = self._sig.bind(*args, **kwargs)
-            bound.apply_defaults()
-            return dict(bound.arguments)
-
+        # Bind args to signature — catch TypeError for wrong arg count/names
         try:
             bound = self._sig.bind(*args, **kwargs)
             bound.apply_defaults()
+        except TypeError as e:
+            raise SchemaValidationError(
+                f"Input binding failed for '{self.__name__}': {e}",
+                tool_name=self.__name__,
+                direction="input",
+                correlation_id=_correlation_id,
+                suggestion=(
+                    f"The agent passed arguments that don't match {self.__name__}'s signature. "
+                    f"Expected: {self._sig}. Error: {e}"
+                ),
+            ) from e
+
+        if not self._input_model:
+            return dict(bound.arguments)
+
+        try:
             validated = self._input_model(**bound.arguments)
             return validated.model_dump()
         except ValidationError as e:
-            # Extract exactly what the agent passed that broke it
             bad_payload = dict(bound.arguments)
             
             from toolguard.alerts.manager import dispatch_alert

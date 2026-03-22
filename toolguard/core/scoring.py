@@ -277,7 +277,8 @@ def score_chain(report: ChainTestReport) -> ReliabilityScore:
     for run in report.runs:
         # Count executions for each tool that ran
         for step in run.steps:
-            ts = tool_failures[step.tool_name]
+            # Use setdefault to handle tools whose names were overwritten by adapters
+            ts = tool_failures.setdefault(step.tool_name, ToolScore(name=step.tool_name))
             ts.total_executions += 1
 
             if not step.success:

@@ -41,9 +41,16 @@ def guard_crewai_tool(crewai_tool: Any) -> GuardedTool:
     func = None
     if hasattr(crewai_tool, "func") and callable(crewai_tool.func):
         func = crewai_tool.func
-    elif hasattr(crewai_tool, "_run") and not getattr(crewai_tool, "_run").__name__ == "NotImplementedError":
-        func = crewai_tool._run
-    elif hasattr(crewai_tool, "_arun"):
+    elif hasattr(crewai_tool, "_run"):
+        # Check if _run is actually implemented (not just the abstract stub)
+        try:
+            import inspect as _inspect
+            source = _inspect.getsource(crewai_tool._run)
+            if "NotImplementedError" not in source:
+                func = crewai_tool._run
+        except (TypeError, OSError):
+            func = crewai_tool._run  # Can't inspect, assume it's real
+    if func is None and hasattr(crewai_tool, "_arun"):
         func = crewai_tool._arun
     elif callable(crewai_tool):
         func = crewai_tool
