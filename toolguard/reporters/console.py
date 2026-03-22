@@ -229,7 +229,14 @@ def print_tool_stats(tools: list) -> None:
 
 def print_banner() -> None:
     """Print the ToolGuard ASCII banner."""
-    banner = """
+    from toolguard import __version__
+    import math
+    
+    version_text = f"v{__version__}"
+    # The inside width of the box is 50 characters
+    version_line_inside = f"  {version_text}".ljust(50)
+    
+    banner = f"""
 ╔══════════════════════════════════════════════════╗
 ║                                                  ║
 ║   ████████╗ ██████╗  ██████╗ ██╗                 ║
@@ -244,11 +251,10 @@ def print_banner() -> None:
 ║    ██║  ███╗██║   ██║███████║██████╔╝██║  ██║    ║
 ║    ██║   ██║██║   ██║██╔══██║██╔══██╗██║  ██║    ║
 ║    ╚██████╔╝╚██████╔╝██║  ██║██║  ██║██████╔╝    ║
-║     ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝    ║
+║     ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝     ║
 ║                                                  ║
 ║  Reliability testing for AI agent tool chains    ║
-║  v0.1.0                                         ║
-║                                                  ║
+║{version_line_inside}║
 ╚══════════════════════════════════════════════════╝
 """
     console.print(banner, style="bold bright_blue")
