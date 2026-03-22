@@ -14,8 +14,7 @@ pip install -e ".[dev]"
 
 # Run tests
 python -m pytest tests/ -v
-
-# All 43 tests should pass
+# All 48 tests should pass
 ```
 
 ## Development Workflow
@@ -31,7 +30,7 @@ python -m pytest tests/ -v
 
 ### High Impact
 - **New test case types** for `TestInputGenerator` (e.g., unicode, concurrent)
-- **Framework integrations** (AutoGen, DSPy, Haystack)
+- **Framework integrations** (DSPy, Semantic Kernel, Haystack)
 - **Real-world example chains** (Stripe, database, multi-API workflows)
 
 ### Medium Impact
