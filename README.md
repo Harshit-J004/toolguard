@@ -281,6 +281,14 @@ from toolguard.integrations.fastapi import as_fastapi_tool
 guarded = as_fastapi_tool(my_endpoint_function)
 ```
 
+```python
+# 🌐 OpenAI Function Calling
+from toolguard.integrations.openai_func import from_openai_function
+
+openai_schema = {"type": "function", "function": {"name": "my_func", "parameters": {}}}
+guarded = from_openai_function(openai_schema, my_python_backend_function)
+```
+
 All 7 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
 
 ### 🧹 100% Authentic Testing
