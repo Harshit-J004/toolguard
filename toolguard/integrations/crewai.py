@@ -52,9 +52,11 @@ def guard_crewai_tool(crewai_tool: Any) -> GuardedTool:
             func = crewai_tool._run  # Can't inspect, assume it's real
     if func is None and hasattr(crewai_tool, "_arun"):
         func = crewai_tool._arun
-    elif callable(crewai_tool):
+    
+    if func is None and callable(crewai_tool):
         func = crewai_tool
-    else:
+        
+    if func is None:
         raise TypeError(f"Cannot extract callable from CrewAI tool: {type(crewai_tool).__name__}")
 
     # Wrap the extracted function directly
