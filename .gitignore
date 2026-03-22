@@ -58,3 +58,7 @@ release_announcement.txt
 
 # Temporary verification scripts
 examples/verify_*.py
+
+# Fuzz reports (generated output)
+*_fuzz_report.json
+fuzz_reports/
