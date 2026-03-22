@@ -22,9 +22,11 @@ from rich.traceback import Traceback
 
 from toolguard.core.validator import GuardedTool
 
+from typing import Callable
+
 console = Console()
 
-def _load_tool_from_path(file_path: str, tool_name: str) -> callable:
+def _load_tool_from_path(file_path: str, tool_name: str) -> Callable:
     """Dynamically load a Python file and exact tool by name."""
     path = Path(file_path)
     if not path.exists():

@@ -145,7 +145,8 @@ def test_cmd(
     tools = _load_tools_from_config(config, config_dir)
 
     if not quiet:
-        console.print(f"   Loaded [bold]{len(tools)}[/] tools: {', '.join(t.__name__ for t in tools)}\n")
+        names = [getattr(t, "name", getattr(t, "__name__", str(type(t)))) for t in tools]
+        console.print(f"   Loaded [bold]{len(tools)}[/] tools: {', '.join(names)}\n")
 
     # Run tests
     try:

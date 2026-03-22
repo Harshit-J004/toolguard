@@ -76,7 +76,6 @@ class ChainRun:
                 parts.append(f"{step.tool_name} ✗")
                 break
         # Remaining tools that never ran
-        tools_run = len(self.steps)
         return parts
 
     def to_dict(self) -> dict[str, Any]:
