@@ -9,7 +9,7 @@ Catch cascading failures before production. Make agent tool calling as predictab
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
-[![Integrations](https://img.shields.io/badge/integrations-7%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
+[![Integrations](https://img.shields.io/badge/integrations-9%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
 
 </div>
 
