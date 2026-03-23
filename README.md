@@ -414,11 +414,11 @@ toolguard/
 │   └── openai_func.py    # OpenAI function calling export
 ├── tests/                # 50 tests (sync + async + integration)
 ├── integration_tests/    # Real-library integration tests
-├── fuzz_targets/         # Integration fuzz scripts (LangChain, CrewAI, AutoGen, etc.)
+├── fuzz_targets/         # Integration fuzz scripts (LangChain, CrewAI, AutoGen, MiroFish etc.)
 └── examples/
     ├── test_alerts.py              # Phase 4 webhook crash simulation
     ├── weather_chain/              # Working 3-tool example
-    └── demo_failing_chain/         # Intentionally buggy (aha moment)
+    └── demo_failing_chain/         # Intentionally buggy 
 ```
 
 ---
