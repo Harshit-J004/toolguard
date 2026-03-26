@@ -104,6 +104,26 @@ def _discover_tools(file_path: Path) -> list:
             except ImportError:
                 pass
                 
+        # 7. OpenAI Agents SDK
+        if (hasattr(obj, "fn") or hasattr(obj, "_func")) and "agents" in str(type(obj)):
+            try:
+                from toolguard.integrations.openai_agents import guard_openai_agents_tool
+                guarded = guard_openai_agents_tool(obj)
+                tools.append(guarded)
+                continue
+            except ImportError:
+                pass
+                
+        # 8. Google ADK FunctionTool
+        if (hasattr(obj, "func") or hasattr(obj, "_func")) and obj.__class__.__name__ == "FunctionTool" and ("google" in str(type(obj)) or "adk" in str(type(obj))):
+            try:
+                from toolguard.integrations.google_adk import guard_google_adk_tool
+                guarded = guard_google_adk_tool(obj)
+                tools.append(guarded)
+                continue
+            except ImportError:
+                pass
+
     return tools
 
 

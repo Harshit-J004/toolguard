@@ -9,7 +9,7 @@ Catch cascading failures before production. Make agent tool calling as predictab
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
-[![Integrations](https://img.shields.io/badge/integrations-8%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
+[![Integrations](https://img.shields.io/badge/integrations-10%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
 
 </div>
 
@@ -306,7 +306,27 @@ from toolguard import create_tool
 def web_search(query: str) -> str: ...
 ```
 
-All 8 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
+```python
+# 🤖 OpenAI Agents SDK
+from agents import function_tool
+from toolguard.integrations.openai_agents import guard_openai_agents_tool
+
+@function_tool
+def fetch_weather(location: str) -> str: ...
+
+guarded = guard_openai_agents_tool(fetch_weather)
+```
+
+```python
+# 🔍 Google Agent Development Kit (ADK)
+from google.adk.tools import FunctionTool
+from toolguard.integrations.google_adk import guard_google_adk_tool
+
+adk_tool = FunctionTool(func=my_google_function)
+guarded = guard_google_adk_tool(adk_tool)
+```
+
+All 10 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
 
 ### 🧹 100% Authentic Testing
 ToolGuard's integration suite runs exclusively against the *actual* PyPI codebase implementations of LangChain, AutoGen, Swarm, FastAPI, and CrewAI. There is absolutely no faked compatibility—it is mathematically proven against the live libraries. We deleted all fake "mock" tests to ensure the standard of reliability is pristine.
