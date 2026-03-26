@@ -62,3 +62,8 @@ examples/verify_*.py
 # Fuzz reports (generated output)
 *_fuzz_report.json
 fuzz_reports/
+
+# External Test Targets (cloned for fuzzing)
+fuzz_targets/AutoGPT/
+fuzz_targets/MiroFish/
+fuzz_targets/autogen/
