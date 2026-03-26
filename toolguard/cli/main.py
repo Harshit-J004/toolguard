@@ -40,6 +40,7 @@ from toolguard.cli.commands.run_cmd import run_cmd
 from toolguard.cli.commands.test_cmd import test_cmd
 from toolguard.cli.commands.badge_cmd import badge_cmd
 from toolguard.cli.commands.replay_cmd import replay_cmd
+from toolguard.cli.commands.proxy_cmd import proxy_cmd
 
 cli.add_command(init_cmd, "init")
 cli.add_command(run_cmd, "run")
@@ -49,6 +50,7 @@ cli.add_command(observe_cmd, "observe")
 cli.add_command(history_cmd, "history")
 cli.add_command(badge_cmd, "badge")
 cli.add_command(replay_cmd, "replay")
+cli.add_command(proxy_cmd, "proxy")
 
 
 # ── Standalone version command ───────────────────────────
