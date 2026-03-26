@@ -9,7 +9,7 @@ Catch cascading failures before production. Make agent tool calling as predictab
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
-[![Integrations](https://img.shields.io/badge/integrations-9%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
+[![Integrations](https://img.shields.io/badge/integrations-8%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
 
 </div>
 
@@ -113,7 +113,10 @@ ToolGuard doesn't test if your AI is smart. It tests if your Python code is bull
 ### 🛡️ Layer-2 Security Firewall (V3.0)
 ToolGuard features an impenetrable execution-layer security framework protecting production servers from critical LLM exploits.
 
-- **Human-in-the-Loop Risk Tiers:** Mark destructive tools with `@create_tool(risk_tier=2)`. ToolGuard mathematically intercepts these calls and natively streams terminal approval prompts before execution, gracefully protecting `asyncio` event loops and headless daemon environments.
+- **1. Human-in-the-Loop Risk Tiers (0-2)**
+    - **What it does:** Prevents an LLM from autonomously executing destructive actions (like dropping a database).
+    - **How to use it:** Mark destructive tools with `@create_tool(risk_tier=2)`. ToolGuard mathematically intercepts these calls and natively streams zero-latency terminal approval prompts before execution, gracefully protecting `asyncio` event loops and headless daemon environments.
+    - **CI/CD Bypass:** Set `TOOLGUARD_AUTO_APPROVE=1` in your environment so your automated CI pipelines never deadlock waiting for manual terminal input.
 - **Recursive Prompt Injection Fuzzing:** The `test_chain` fuzzer automatically injects `[SYSTEM OVERRIDE]` execution payloads into your pipelines. A bespoke recursive depth-first memory parser scans internal custom object serialization, byte arrays, and `.casefold()` string mutations to eliminate zero-day blind spots.
 - **Golden Traces (DAG Instrumentation):** With two lines of code (`with TraceTracker() as trace:`), ToolGuard natively intercepts Python `contextvars` to construct a chronologically perfect Directed Acyclic Graph of all tools orchestrated by LangChain, CrewAI, Swarm, and AutoGen.
 - **Non-Deterministic Verification:** Punishing an AI for self-correcting is an anti-pattern. Developers use `trace.assert_sequence(["auth", "refund"])` to mathematically enforce mandatory compliance checkpoints while permitting the LLM complete freedom to autonomously select supplementary network tools.
@@ -282,14 +285,28 @@ guarded = as_fastapi_tool(my_endpoint_function)
 ```
 
 ```python
-# 🌐 OpenAI Function Calling
-from toolguard.integrations.openai_func import from_openai_function
+# 🔺 Vercel AI SDK (Python HTTP Backend)
+# Expose Python core tools safely to Next.js Edge runtimes
+from fastapi import FastAPI
+from toolguard.integrations.fastapi import as_fastapi_tool
+from toolguard.core.chain import test_chain
 
-openai_schema = {"type": "function", "function": {"name": "my_func", "parameters": {}}}
-guarded = from_openai_function(openai_schema, my_python_backend_function)
+def fetch_user_data(user_id: int) -> dict: ...
+
+# Run pre-flight reliability tests on your Vercel-bound tools
+report = test_chain([as_fastapi_tool(fetch_user_data)], assert_reliability=0.90)
 ```
 
-All 7 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
+```python
+# 🌐 AutoGPT
+from toolguard import create_tool
+
+# Protect your native Python scrapers from hallucinated query inputs
+@create_tool(schema="auto")
+def web_search(query: str) -> str: ...
+```
+
+All 8 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
 
 ### 🧹 100% Authentic Testing
 ToolGuard's integration suite runs exclusively against the *actual* PyPI codebase implementations of LangChain, AutoGen, Swarm, FastAPI, and CrewAI. There is absolutely no faked compatibility—it is mathematically proven against the live libraries. We deleted all fake "mock" tests to ensure the standard of reliability is pristine.
@@ -414,11 +431,11 @@ toolguard/
 │   └── openai_func.py    # OpenAI function calling export
 ├── tests/                # 50 tests (sync + async + integration)
 ├── integration_tests/    # Real-library integration tests
-├── fuzz_targets/         # Integration fuzz scripts (LangChain, CrewAI, AutoGen, MiroFish etc.)
+├── fuzz_targets/         # Integration fuzz scripts (LangChain, CrewAI, AutoGen, etc.)
 └── examples/
     ├── test_alerts.py              # Phase 4 webhook crash simulation
     ├── weather_chain/              # Working 3-tool example
-    └── demo_failing_chain/         # Intentionally buggy 
+    └── demo_failing_chain/         # Intentionally buggy (aha moment)
 ```
 
 ---
