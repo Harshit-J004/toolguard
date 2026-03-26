@@ -4,6 +4,19 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
+## [5.0.0] — 2026-03-26 — "The Semantic Firewall"
+
+### 🧠 Semantic Policy Engine (Context-Aware Authorization)
+- **New module:** `toolguard/mcp/semantic.py` — goes beyond type-checking to answer "was the tool ALLOWED to do this?"
+- **7 constraint types** across 2 tiers:
+  - **Tier 1 (Rule-Based):** `path_deny`, `path_allow`, `value_deny`, `value_allow`, `regex_deny`
+  - **Tier 2 (Context-Aware):** `context_check` (require prior tool call), `max_scope` (cap unique values per session)
+- **6-Layer Interceptor Pipeline:** Added Layer 5 (Semantic Policy) and Layer 6 (Trace Logging) to the MCP proxy
+- **YAML-native:** All constraints defined in the same `security.yaml` policy file
+- **Verified:** 24/24 unit tests + 8/8 real-world tests using official Anthropic `mcp` SDK
+
+---
+
 ## [4.0.0] — 2026-03-26 — "The Cloudflare for AI Agents"
 
 ### 🛡️ MCP Security Proxy (Runtime Firewall)
