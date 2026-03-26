@@ -223,6 +223,29 @@ toolguard init --name my_project                   # Scaffold project
 
 ---
 
+## 🛡️ MCP Security Proxy (The "Cloudflare of AI Agents")
+
+ToolGuard v4.0 introduces the **MCP Security Proxy** — a transparent, runtime firewall for the Model Context Protocol. It sits perfectly between any MCP client (Claude, GPT, Gemini) and any MCP server, intercepting JSON-RPC `tools/call` requests in real-time.
+
+```bash
+# Before (unguarded)
+claude --mcp-server "python my_database_server.py"
+
+# After (guarded by ToolGuard)
+toolguard proxy --upstream "python my_database_server.py" --policy security.yaml
+```
+
+**The 5-Layer Interceptor Pipeline:**
+1. **Policy Enforcement:** Permanently block specific dangerous tools.
+2. **Risk-Tier Gating:** Pause destructive tools for human approval.
+3. **Schema Validation:** Ensure the LLM didn't hallucinate mis-typed parameters.
+4. **Injection Scanning:** Deep DFS memory scans to neutralize Prompt Injection.
+5. **Rate Limiting:** Protect your upstream services from cyclic agent loops.
+
+*ToolGuard operates strictly at the JSON-RPC local transport layer. Zero vendor coupling. It seamlessly protects MCP servers written in Python, TypeScript, Go, or Rust.*
+
+---
+
 ## 🔌 Native Framework Integrations
 
 ToolGuard works with your existing tools. No rewrites needed — just wrap and fuzz.
