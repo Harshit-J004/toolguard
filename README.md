@@ -235,17 +235,65 @@ claude --mcp-server "python my_database_server.py"
 toolguard proxy --upstream "python my_database_server.py" --policy security.yaml
 ```
 
-**The 5-Layer Interceptor Pipeline:**
+**The 6-Layer Interceptor Pipeline:**
 1. **Policy Enforcement:** Permanently block specific dangerous tools.
 2. **Risk-Tier Gating:** Pause destructive tools for human approval.
-3. **Schema Validation:** Ensure the LLM didn't hallucinate mis-typed parameters.
-4. **Injection Scanning:** Deep DFS memory scans to neutralize Prompt Injection.
-5. **Rate Limiting:** Protect your upstream services from cyclic agent loops.
+3. **Injection Scanning:** Deep DFS memory scans to neutralize Prompt Injection.
+4. **Rate Limiting:** Protect your upstream services from cyclic agent loops.
+5. **Semantic Policy:** Context-aware authorization — "was the tool *allowed* to do THIS?"
+6. **Trace Logging:** Full execution DAG recorded for audit and replay.
 
 *ToolGuard operates strictly at the JSON-RPC local transport layer. Zero vendor coupling. It seamlessly protects MCP servers written in Python, TypeScript, Go, or Rust.*
 > ✅ **Verified:** Successfully integration-tested to intercept raw traffic between the official Anthropic `mcp` SDK client and server.
 
 ---
+
+## 🧠 Semantic Policy Engine — Beyond Type-Checking
+
+Traditional firewalls ask: *"Is this data valid?"* ToolGuard's Semantic Policy Engine asks: **"Was the tool ALLOWED to do this?"**
+
+```yaml
+# security.yaml — Semantic constraints
+tools:
+  read_file:
+    constraints:
+      - type: path_deny
+        paths: ["/etc/passwd", "*.env", "*/.ssh/*"]
+        reason: "Access to system/secret files is prohibited"
+      - type: path_allow
+        paths: ["/workspace/*", "/tmp/*"]
+        reason: "Agent may only access workspace files"
+
+  execute_sql:
+    constraints:
+      - type: regex_deny
+        field: "query"
+        patterns: ["DROP\\s+TABLE", "DELETE\\s+FROM", "TRUNCATE"]
+        reason: "Destructive SQL operations are forbidden"
+
+  delete_user:
+    constraints:
+      - type: context_check
+        require_prior_tool: "get_user_details"
+        reason: "Must look up user details before deleting"
+      - type: max_scope
+        field: "user_id"
+        max_per_session: 3
+        reason: "Cannot delete more than 3 users per session"
+```
+
+**Constraint Types:**
+| Type | Tier | What It Does |
+|------|------|-------------|
+| `path_deny` | 1 | Block file paths matching glob patterns |
+| `path_allow` | 1 | Whitelist-only file path access |
+| `value_deny` | 1 | Block specific argument values |
+| `value_allow` | 1 | Whitelist-only argument values |
+| `regex_deny` | 1 | Block content matching regex (e.g., SQL keywords) |
+| `context_check` | 2 | Require a prior tool call in the session |
+| `max_scope` | 2 | Cap unique values per field per session |
+
+
 
 ## 🔌 Native Framework Integrations
 

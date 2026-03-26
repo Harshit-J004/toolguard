@@ -22,6 +22,7 @@ class ToolPolicy:
     rate_limit: int = 50          # calls per minute
     blocked: bool = False
     scan_injection: bool = True
+    constraints: list[dict] = field(default_factory=list)  # Semantic constraints
 
 
 @dataclass
@@ -98,6 +99,7 @@ class MCPPolicy:
                 rate_limit=tool_data.get("rate_limit", defaults.rate_limit),
                 blocked=tool_data.get("blocked", defaults.blocked),
                 scan_injection=tool_data.get("scan_injection", defaults.scan_injection),
+                constraints=tool_data.get("constraints", []),
             )
 
         return cls(tools=tools, defaults=defaults)

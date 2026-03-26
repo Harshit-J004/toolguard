@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from toolguard.mcp.policy import MCPPolicy
+from toolguard.mcp.semantic import SemanticEngine, SessionContext
 
 
 # ──────────────────────────────────────────────
@@ -144,6 +145,14 @@ class MCPInterceptor:
         self.verbose = verbose
         self._rate_limiter = RateLimiter()
         self._trace_log: list[dict[str, Any]] = []
+        self._semantic_engine = SemanticEngine.from_policy_dict(
+            {"tools": {
+                name: {"constraints": tp.constraints}
+                for name, tp in policy.tools.items()
+                if tp.constraints
+            }}
+        )
+        self._session = SessionContext()
 
     def intercept(self, tool_name: str, arguments: dict[str, Any]) -> InterceptResult:
         """Run the full 5-layer security pipeline.
@@ -198,7 +207,21 @@ class MCPInterceptor:
                 layer="rate_limit",
             )
 
-        # ── Layer 5: Trace Logging ──
+        # ── Layer 5: Semantic Policy ──
+        if self._semantic_engine.has_constraints(tool_name):
+            sem_result = self._semantic_engine.evaluate(
+                tool_name, arguments, self._session
+            )
+            if not sem_result.allowed:
+                self._log("SEMANTIC", tool_name, sem_result.reason)
+                return InterceptResult(
+                    allowed=False,
+                    reason=f"[Semantic Policy] {sem_result.reason}",
+                    layer="semantic",
+                )
+
+        # ── Layer 6: Trace Logging ──
+        self._session.record_call(tool_name, arguments)
         self._trace_log.append({
             "tool": tool_name,
             "arguments": arguments,
@@ -206,7 +229,7 @@ class MCPInterceptor:
             "decision": "ALLOWED",
         })
 
-        self._log("ALLOWED", tool_name, "All 5 layers passed")
+        self._log("ALLOWED", tool_name, "All 6 layers passed")
         return InterceptResult(allowed=True)
 
     @property
