@@ -243,6 +243,7 @@ toolguard proxy --upstream "python my_database_server.py" --policy security.yaml
 5. **Rate Limiting:** Protect your upstream services from cyclic agent loops.
 
 *ToolGuard operates strictly at the JSON-RPC local transport layer. Zero vendor coupling. It seamlessly protects MCP servers written in Python, TypeScript, Go, or Rust.*
+> ✅ **Verified:** Successfully integration-tested to intercept raw traffic between the official Anthropic `mcp` SDK client and server.
 
 ---
 
