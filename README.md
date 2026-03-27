@@ -6,6 +6,15 @@
 
 ![ToolGuard v5.0.0 Obsidian Dashboard](docs/images/dashboard_v5_hero.png)
 
+### 🎮 Operations vs. 🛠️ Engineering
+
+| | 📻 **Live Dashboard** (`toolguard dashboard`) | ⌨️ **Terminal CLI** (`toolguard run`) |
+|---|---|---|
+| **When to use** | **Live Monitoring & Post-Mortems** | **Automated Testing & CI/CD** |
+| **Best for** | Visualizing complex DAG traces in real-time | Rapid iteration & headless environments |
+| **Aesthetic** | "Obsidian" high-contrast dark mode | High-performance Rich terminal output |
+| **Goal** | Catch "drift" and security attacks live | Mathematically prove reliability before deploy |
+
 Catch cascading failures before production. Make agent tool calling as predictable as unit tests made software reliable.
 
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
