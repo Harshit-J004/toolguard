@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-toolguard"
-version = "5.0.0"
-description = "Open-source reliability testing for AI agent tool chains. Catch cascading failures before production."
+version = "5.0.1"
+description = "Cloudflare for AI Agents. 6-layer security interceptor and observability dashboard."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
