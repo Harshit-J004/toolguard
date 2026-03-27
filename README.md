@@ -2,7 +2,9 @@
 
 # 🛡️ ToolGuard
 
-**Reliability testing for AI agent tool chains.**
+**The "Cloudflare for AI Agents".** 6-layer security interceptor, real-time observability dashboard, and automated reliability testing for MCP and AI tool chains.
+
+![ToolGuard v5.0.0 Obsidian Dashboard](docs/images/dashboard_v5_hero.png)
 
 Catch cascading failures before production. Make agent tool calling as predictable as unit tests made software reliable.
 
@@ -155,8 +157,6 @@ report = test_chain([fetch_from_api, process_data], assert_reliability=0.95)
 
 ### 📻 The "Obsidian" Live Web Dashboard (v5.0.0)
 ToolGuard includes a stunning, high-contrast, dark-mode web dashboard for monitoring live agent execution and security traces.
-
-![ToolGuard v5.0.0 Obsidian Dashboard](docs/images/dashboard_v5_hero.png)
 
 ```bash
 # Launch the live proxy monitor
