@@ -16,7 +16,7 @@
 
 ---
 
-### 🎮 Operations vs. 🛠️ Engineering
+### Operations vs. Engineering
 
 📻 **Use the Dashboard (`toolguard dashboard`) when:**
 *   **Live Monitoring**: You are running an agent and want to watch it work in real-time.
