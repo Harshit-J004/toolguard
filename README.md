@@ -4,16 +4,21 @@
 
 **The "Cloudflare for AI Agents".** 6-layer security interceptor, real-time observability dashboard, and automated reliability testing for MCP and AI tool chains.
 
-![ToolGuard v5.0.0 Obsidian Dashboard](docs/images/dashboard_v5_image.png)
+![ToolGuard v5.0.1 Obsidian Dashboard](docs/images/dashboard_v5_image.png)
 
 ### 🎮 Operations vs. 🛠️ Engineering
 
-| | 📻 **Live Dashboard** (`toolguard dashboard`) | ⌨️ **Terminal CLI** (`toolguard run`) |
-|---|---|---|
-| **When to use** | **Live Monitoring & Post-Mortems** | **Automated Testing & CI/CD** |
-| **Best for** | Visualizing complex DAG traces in real-time | Rapid iteration & headless environments |
-| **Aesthetic** | "Obsidian" high-contrast dark mode | High-performance Rich terminal output |
-| **Goal** | Catch "drift" and security attacks live | Mathematically prove reliability before deploy |
+📻 **Use the Dashboard (`toolguard dashboard`) when:**
+*   **Live Monitoring**: You are running an agent and want to watch it work in real-time.
+*   **Visualizing Crashes**: You see a `BLOCKED` event and want to inspect the **JSON Payload** or the **DAG Timeline** to see exactly why the semantic layer fired.
+*   **Demos & Presentations**: It’s the best way to show someone (or a client) how the security mesh actually protects the system.
+*   **Post-Mortem**: Reviewing the history of traces to identify "hallucination drifts" over time. 🦇
+
+⌨️ **Use the Terminal (`toolguard run` / `test`) when:**
+*   **CI/CD Pipelines**: You want the build to fail automatically if the reliability score drops below 95%.
+*   **Rapid Iteration**: You just changed one line of code and want a 1-second "Fuzz Check" without leaving your IDE.
+*   **Headless Servers**: You’re deploying to a Docker container or AWS/GCP where you don't have a web browser.
+*   **Local Replay**: Using `toolguard replay` to step through a specific failure payload you found earlier. ⚡
 
 Catch cascading failures before production. Make agent tool calling as predictable as unit tests made software reliable.
 
