@@ -7,7 +7,7 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 ## [5.0.1] - 2026-03-27
 
 ### Fixed
-- Synchronized visual assets and high-res Obsidian hero image for README/PyPI.
+- Synchronized visual assets and high-res Obsidian image for README/PyPI.
 - Updated "Operations vs. Engineering" workflow guide.
 
 ## [5.0.0] - 2026-03-27
