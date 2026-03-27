@@ -1,0 +1,4 @@
+tools:
+  execute_sql:
+    blocked: true
+    risk_tier: 2

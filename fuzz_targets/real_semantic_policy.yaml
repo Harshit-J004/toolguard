@@ -1,0 +1,26 @@
+tools:
+  read_file:
+    risk_tier: 0
+    constraints:
+      - type: path_deny
+        paths: ["/etc/passwd", "/etc/shadow", "*.env", "*/.ssh/*"]
+        reason: "Access to system/secret files is prohibited"
+      - type: path_allow
+        paths: ["/workspace/*", "/tmp/*"]
+        reason: "Agent may only access workspace or temp files"
+
+  execute_sql:
+    risk_tier: 1
+    constraints:
+      - type: regex_deny
+        field: "query"
+        patterns: ["DROP\\s+TABLE", "DELETE\\s+FROM", "TRUNCATE"]
+        reason: "Destructive SQL operations are forbidden"
+
+  send_email:
+    risk_tier: 1
+    constraints:
+      - type: value_deny
+        field: "recipient"
+        patterns: ["*@internal.company.com", "*admin*"]
+        reason: "Agent cannot email internal company addresses"

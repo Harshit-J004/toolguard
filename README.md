@@ -10,6 +10,7 @@ Catch cascading failures before production. Make agent tool calling as predictab
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
 [![Integrations](https://img.shields.io/badge/integrations-10%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
+[![Security](https://img.shields.io/badge/security-6%20layer%20firewall-critical?style=flat-square)](#)
 
 </div>
 
@@ -113,10 +114,7 @@ ToolGuard doesn't test if your AI is smart. It tests if your Python code is bull
 ### 🛡️ Layer-2 Security Firewall (V3.0)
 ToolGuard features an impenetrable execution-layer security framework protecting production servers from critical LLM exploits.
 
-- **1. Human-in-the-Loop Risk Tiers (0-2)**
-    - **What it does:** Prevents an LLM from autonomously executing destructive actions (like dropping a database).
-    - **How to use it:** Mark destructive tools with `@create_tool(risk_tier=2)`. ToolGuard mathematically intercepts these calls and natively streams zero-latency terminal approval prompts before execution, gracefully protecting `asyncio` event loops and headless daemon environments.
-    - **CI/CD Bypass:** Set `TOOLGUARD_AUTO_APPROVE=1` in your environment so your automated CI pipelines never deadlock waiting for manual terminal input.
+- **Human-in-the-Loop Risk Tiers:** Mark destructive tools with `@create_tool(risk_tier=2)`. ToolGuard mathematically intercepts these calls and natively streams terminal approval prompts before execution, gracefully protecting `asyncio` event loops and headless daemon environments.
 - **Recursive Prompt Injection Fuzzing:** The `test_chain` fuzzer automatically injects `[SYSTEM OVERRIDE]` execution payloads into your pipelines. A bespoke recursive depth-first memory parser scans internal custom object serialization, byte arrays, and `.casefold()` string mutations to eliminate zero-day blind spots.
 - **Golden Traces (DAG Instrumentation):** With two lines of code (`with TraceTracker() as trace:`), ToolGuard natively intercepts Python `contextvars` to construct a chronologically perfect Directed Acyclic Graph of all tools orchestrated by LangChain, CrewAI, Swarm, and AutoGen.
 - **Non-Deterministic Verification:** Punishing an AI for self-correcting is an anti-pattern. Developers use `trace.assert_sequence(["auth", "refund"])` to mathematically enforce mandatory compliance checkpoints while permitting the LLM complete freedom to autonomously select supplementary network tools.
@@ -155,14 +153,15 @@ async def fetch_from_api(url: str) -> dict:
 report = test_chain([fetch_from_api, process_data], assert_reliability=0.95)
 ```
 
-### 🦇 Immersive Live Dashboard
-When testing locally, you don't have to stare at basic print logs. By passing `--dashboard`, ToolGuard launches a stunning, high-contrast, dark-mode terminal UI (built on Textual).
+### 📻 The "Obsidian" Live Web Dashboard (v5.0.0)
+ToolGuard includes a stunning, high-contrast, dark-mode web dashboard for monitoring live agent execution and security traces.
 
 ```bash
-toolguard run my_agent.py --dashboard
+# Launch the live proxy monitor
+toolguard dashboard
 ```
 
-It streams live, concurrent fuzzing results as they happen, calculates metrics in realtime, and tracks exactly which functions crash under payload injection—all encapsulated in a dedicated hacker-style "Mission Control" interface.
+It streams live concurrent security interventions via SSE (Server-Sent Events) and tracks precisely which functions get blocked under payload injection. Built with a dedicated hacker-style "Terminal Elite" aesthetic, featuring a real-time **Sentinel HUD (L1-L6)** and structural DAG timeline analysis.
 
 ### 📊 Reliability Scoring
 Quantified trust with risk levels and deployment gates.
@@ -210,8 +209,9 @@ def call_flaky_service(data: dict) -> dict: ...
 
 ### 🖥️ CLI
 ```bash
+toolguard proxy --upstream "mcp-server.py"         # Run the raw JSON-RPC 6-layer MCP proxy
+toolguard dashboard                                # 🦇 Launch the Obsidian web dashboard
 toolguard run my_agent.py                          # Zero-config auto-test
-toolguard run my_agent.py --dashboard              # 🦇 Live immersive TUI control center
 toolguard test --chain my_chain.yaml               # YAML-based chain test
 toolguard test --chain my_chain.yaml --html out.html  # HTML report
 toolguard test --chain my_chain.yaml --junit-xml out.xml  # JUnit XML for CI
@@ -222,78 +222,6 @@ toolguard init --name my_project                   # Scaffold project
 ```
 
 ---
-
-## 🛡️ MCP Security Proxy (The "Cloudflare of AI Agents")
-
-ToolGuard v4.0 introduces the **MCP Security Proxy** — a transparent, runtime firewall for the Model Context Protocol. It sits perfectly between any MCP client (Claude, GPT, Gemini) and any MCP server, intercepting JSON-RPC `tools/call` requests in real-time.
-
-```bash
-# Before (unguarded)
-claude --mcp-server "python my_database_server.py"
-
-# After (guarded by ToolGuard)
-toolguard proxy --upstream "python my_database_server.py" --policy security.yaml
-```
-
-**The 6-Layer Interceptor Pipeline:**
-1. **Policy Enforcement:** Permanently block specific dangerous tools.
-2. **Risk-Tier Gating:** Pause destructive tools for human approval.
-3. **Injection Scanning:** Deep DFS memory scans to neutralize Prompt Injection.
-4. **Rate Limiting:** Protect your upstream services from cyclic agent loops.
-5. **Semantic Policy:** Context-aware authorization — "was the tool *allowed* to do THIS?"
-6. **Trace Logging:** Full execution DAG recorded for audit and replay.
-
-*ToolGuard operates strictly at the JSON-RPC local transport layer. Zero vendor coupling. It seamlessly protects MCP servers written in Python, TypeScript, Go, or Rust.*
-> ✅ **Verified:** Successfully integration-tested to intercept raw traffic between the official Anthropic `mcp` SDK client and server.
-
----
-
-## 🧠 Semantic Policy Engine — Beyond Type-Checking
-
-Traditional firewalls ask: *"Is this data valid?"* ToolGuard's Semantic Policy Engine asks: **"Was the tool ALLOWED to do this?"**
-
-```yaml
-# security.yaml — Semantic constraints
-tools:
-  read_file:
-    constraints:
-      - type: path_deny
-        paths: ["/etc/passwd", "*.env", "*/.ssh/*"]
-        reason: "Access to system/secret files is prohibited"
-      - type: path_allow
-        paths: ["/workspace/*", "/tmp/*"]
-        reason: "Agent may only access workspace files"
-
-  execute_sql:
-    constraints:
-      - type: regex_deny
-        field: "query"
-        patterns: ["DROP\\s+TABLE", "DELETE\\s+FROM", "TRUNCATE"]
-        reason: "Destructive SQL operations are forbidden"
-
-  delete_user:
-    constraints:
-      - type: context_check
-        require_prior_tool: "get_user_details"
-        reason: "Must look up user details before deleting"
-      - type: max_scope
-        field: "user_id"
-        max_per_session: 3
-        reason: "Cannot delete more than 3 users per session"
-```
-
-**Constraint Types:**
-| Type | Tier | What It Does |
-|------|------|-------------|
-| `path_deny` | 1 | Block file paths matching glob patterns |
-| `path_allow` | 1 | Whitelist-only file path access |
-| `value_deny` | 1 | Block specific argument values |
-| `value_allow` | 1 | Whitelist-only argument values |
-| `regex_deny` | 1 | Block content matching regex (e.g., SQL keywords) |
-| `context_check` | 2 | Require a prior tool call in the session |
-| `max_scope` | 2 | Cap unique values per field per session |
-
-
 
 ## 🔌 Native Framework Integrations
 
@@ -354,48 +282,6 @@ guarded_tools = guard_swarm_agent(agent)  # Returns list of GuardedTools
 from toolguard.integrations.fastapi import as_fastapi_tool
 
 guarded = as_fastapi_tool(my_endpoint_function)
-```
-
-```python
-# 🔺 Vercel AI SDK (Python HTTP Backend)
-# Expose Python core tools safely to Next.js Edge runtimes
-from fastapi import FastAPI
-from toolguard.integrations.fastapi import as_fastapi_tool
-from toolguard.core.chain import test_chain
-
-def fetch_user_data(user_id: int) -> dict: ...
-
-# Run pre-flight reliability tests on your Vercel-bound tools
-report = test_chain([as_fastapi_tool(fetch_user_data)], assert_reliability=0.90)
-```
-
-```python
-# 🌐 AutoGPT
-from toolguard import create_tool
-
-# Protect your native Python scrapers from hallucinated query inputs
-@create_tool(schema="auto")
-def web_search(query: str) -> str: ...
-```
-
-```python
-# 🤖 OpenAI Agents SDK
-from agents import function_tool
-from toolguard.integrations.openai_agents import guard_openai_agents_tool
-
-@function_tool
-def fetch_weather(location: str) -> str: ...
-
-guarded = guard_openai_agents_tool(fetch_weather)
-```
-
-```python
-# 🔍 Google Agent Development Kit (ADK)
-from google.adk.tools import FunctionTool
-from toolguard.integrations.google_adk import guard_google_adk_tool
-
-adk_tool = FunctionTool(func=my_google_function)
-guarded = guard_google_adk_tool(adk_tool)
 ```
 
 All 10 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
@@ -523,7 +409,6 @@ toolguard/
 │   └── openai_func.py    # OpenAI function calling export
 ├── tests/                # 50 tests (sync + async + integration)
 ├── integration_tests/    # Real-library integration tests
-├── fuzz_targets/         # Integration fuzz scripts (LangChain, CrewAI, AutoGen, etc.)
 └── examples/
     ├── test_alerts.py              # Phase 4 webhook crash simulation
     ├── weather_chain/              # Working 3-tool example

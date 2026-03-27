@@ -1,0 +1,23 @@
+# ToolGuard MCP Security Policy — Deep Audit Configuration
+# This policy is used to test all 5 interceptor layers.
+
+defaults:
+  risk_tier: 0
+  rate_limit: 50
+  scan_injection: true
+
+tools:
+  read_file:
+    risk_tier: 0
+    rate_limit: 100
+
+  delete_file:
+    risk_tier: 2
+    rate_limit: 5
+
+  execute_code:
+    blocked: true
+
+  search_web:
+    risk_tier: 0
+    rate_limit: 3

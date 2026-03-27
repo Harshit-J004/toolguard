@@ -4,54 +4,23 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
-## [5.0.0] — 2026-03-26 — "The Semantic Firewall"
+## [5.0.0] - 2026-03-27
 
-### 🧠 Semantic Policy Engine (Context-Aware Authorization)
-- **New module:** `toolguard/mcp/semantic.py` — goes beyond type-checking to answer "was the tool ALLOWED to do this?"
-- **7 constraint types** across 2 tiers:
-  - **Tier 1 (Rule-Based):** `path_deny`, `path_allow`, `value_deny`, `value_allow`, `regex_deny`
-  - **Tier 2 (Context-Aware):** `context_check` (require prior tool call), `max_scope` (cap unique values per session)
-- **6-Layer Interceptor Pipeline:** Added Layer 5 (Semantic Policy) and Layer 6 (Trace Logging) to the MCP proxy
-- **YAML-native:** All constraints defined in the same `security.yaml` policy file
-- **Verified:** 24/24 unit tests + 8/8 real-world tests using official Anthropic `mcp` SDK
+### Added
+- **Enterprise MCP Security Proxy**: A transparent, runtime security firewall for the Model Context Protocol (MCP).
+- **6-Layer Interceptor Pipeline**: Policy, Risk-Tier, Injection, Rate-Limit, Semantic, and Trace layers.
+- **Semantic Policy Engine**: Context-aware authorization beyond type-checking (e.g., path patterns, regex, session scope).
+- **Terminal Elite Web Dashboard (Obsidian)**: A zero-dependency, mission-critical GUI featuring Server-Sent Events (SSE) trace streaming, a live 6-Layer Sentinel HUD (`[ L1:POL - L6:TRC ]`), and deep payload JSON inspection.
+- **10-Framework Integration Milestone**: Added native support for **OpenAI Agents SDK** and **Google Agent Development Kit (ADK)**.
+- **Official MCP SDK Support**: Verified interoperability with Anthropic's official `mcp` Python SDK.
 
----
-
-## [4.0.0] — 2026-03-26 — "The Cloudflare for AI Agents"
-
-### 🛡️ MCP Security Proxy (Runtime Firewall)
-- **New module:** `toolguard/mcp/` — transparent JSON-RPC 2.0 proxy for the Model Context Protocol
-- **New CLI command:** `toolguard proxy --upstream "python server.py" --policy policy.yaml`
-- Intercepts all `tools/call` requests between any MCP client and any MCP server in real-time
-- Operates at the raw transport layer — zero SDK coupling, works with Python/TypeScript/Go/Rust servers
-
-### The 5-Layer Interceptor Pipeline
-1. **Policy Enforcement:** YAML-based per-tool rules to permanently block dangerous tools
-2. **Risk-Tier Gating:** Tier-2 tools pause for human terminal approval (bypassed via `TOOLGUARD_AUTO_APPROVE=1`)
-3. **Prompt Injection Scanning:** Recursive DFS memory scanner detects prompt smuggling in nested JSON
-4. **Rate Limiting:** Sliding-window per-tool frequency caps prevent cyclic agent loops
-5. **Trace Logging:** Full execution DAG recorded to `.toolguard/mcp_traces/` as JSON
-
-### New Files
-- `toolguard/mcp/__init__.py` — Package exports
-- `toolguard/mcp/policy.py` — YAML policy engine with per-tool `ToolPolicy` dataclasses
-- `toolguard/mcp/interceptor.py` — 5-layer `MCPInterceptor` with `InterceptResult` API
-- `toolguard/mcp/proxy.py` — `MCPProxy` subprocess-based JSON-RPC relay engine
-- `toolguard/cli/commands/proxy_cmd.py` — Click CLI with `--upstream`, `--policy`, `--log`, `--verbose`
-- `fuzz_targets/test_mcp_proxy.py` — 8-test end-to-end proof script (all passed)
-
----
-
-## [3.2.0] — 2026-03-26 — "The 10 Integrations Milestone"
-
-### New Framework Adapters
-- **OpenAI Agents SDK:** `guard_openai_agents_tool()` — natively wraps `@function_tool` decorators
-- **Google Agent Development Kit (ADK):** `guard_google_adk_tool()` — wraps `FunctionTool` from `google.adk.tools`
-- CLI auto-discovery updated to detect both new SDKs via duck-typing
-- Fuzz-tested with 14 adversarial payloads across both frameworks (all intercepted)
-
-### Badge Update
-- Integration badge updated from "8 frameworks" → "10 frameworks"
+### Verified (Live Gemini 2.0 Flash API)
+- **L1 Policy**: Permanently blocked `delete_database` tool — instant deny.
+- **L2 Risk-Tier**: Headless auto-deny on Tier-2 `shutdown_server` without human terminal.
+- **L3 Injection**: Detected `[SYSTEM OVERRIDE]` prompt injection payload in nested arguments.
+- **L4 Rate-Limit**: Burst 12 rapid calls correctly throttled at 10/min sliding window.
+- **L5 Semantic**: Regex-denied `DROP TABLE users` from a live Gemini-generated function call.
+- **L6 Trace**: Clean `read_file` call passed all 6 layers and logged to execution DAG.
 
 ---
 

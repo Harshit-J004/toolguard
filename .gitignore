@@ -67,3 +67,13 @@ fuzz_reports/
 fuzz_targets/AutoGPT/
 fuzz_targets/MiroFish/
 fuzz_targets/autogen/
+
+# Local release drafts
+releases/
+
+# Temporary live demo/test scripts (not for public repo)
+live_gemini_native.py
+live_gemini_agent.py
+live_mcp_proxy_demo.py
+simulate_live_agent.py
+deep_layer_stress_test.py
