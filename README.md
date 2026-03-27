@@ -6,6 +6,16 @@
 
 ![ToolGuard v5.0.1 Obsidian Dashboard](docs/images/dashboard_v5_image.png)
 
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
+[![Integrations](https://img.shields.io/badge/integrations-10%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
+[![Security](https://img.shields.io/badge/security-6%20layer%20firewall-critical?style=flat-square)](#)
+
+</div>
+
+---
+
 ### 🎮 Operations vs. 🛠️ Engineering
 
 📻 **Use the Dashboard (`toolguard dashboard`) when:**
@@ -21,14 +31,6 @@
 *   **Local Replay**: Using `toolguard replay` to step through a specific failure payload you found earlier. ⚡
 
 Catch cascading failures before production. Make agent tool calling as predictable as unit tests made software reliable.
-
-[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
-[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
-[![Integrations](https://img.shields.io/badge/integrations-10%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
-[![Security](https://img.shields.io/badge/security-6%20layer%20firewall-critical?style=flat-square)](#)
-
-</div>
 
 ---
 
