@@ -26,12 +26,19 @@ nav:
     - Scoring & Deployment: scoring.md
     - History & Storage: history.md
     - Observability: observability.md
+  - Security:
+    - MCP Proxy: mcp-proxy.md
+    - Live Dashboard: dashboard.md
   - API Reference: api.md
   - Integrations:
-      - FastAPI: fastapi.md
+      - LangChain: langchain.md
       - Microsoft AutoGen: autogen.md
+      - CrewAI: crewai.md
       - OpenAI Swarm: swarm.md
+      - OpenAI Agents SDK: openai-agents.md
+      - Google ADK: google-adk.md
       - LlamaIndex: llamaindex.md
+      - FastAPI: fastapi.md
       - Vercel AI SDK: vercel.md
 
 plugins:
