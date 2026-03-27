@@ -1,14 +1,15 @@
 """
 toolguard.mcp.interceptor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 5-layer security pipeline for MCP tool calls.
+The 6-layer security pipeline for MCP tool calls.
 
 Applies the following checks to every `tools/call` request:
-  1. Policy Check — Is this tool blocked?
-  2. Risk Tier Gate — Does this tool require human approval?
-  3. Injection Scan — Does the payload contain prompt injection?
-  4. Rate Limiting — Has this tool exceeded its call frequency?
-  5. Trace Logging — Record the call in the execution DAG.
+  1. Policy Check     — Is this tool blocked?
+  2. Risk Tier Gate   — Does this tool require human approval?
+  3. Injection Scan   — Does the payload contain prompt injection?
+  4. Rate Limiting    — Has this tool exceeded its call frequency?
+  5. Semantic Policy  — Does the argument content violate semantic rules?
+  6. Trace Logging    — Record the call in the execution DAG.
 """
 
 from __future__ import annotations
@@ -155,7 +156,7 @@ class MCPInterceptor:
         self._session = SessionContext()
 
     def intercept(self, tool_name: str, arguments: dict[str, Any]) -> InterceptResult:
-        """Run the full 5-layer security pipeline.
+        """Run the full 6-layer security pipeline.
         
         Args:
             tool_name: The MCP tool name from the `tools/call` request.
