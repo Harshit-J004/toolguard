@@ -41,8 +41,8 @@ dependencies = [
 langchain = ["langchain-core>=0.1.0"]
 crewai = ["crewai>=0.1.0"]
 openai = ["openai>=1.0.0"]
-dashboard = ["textual>=0.50.0"]
-all = ["langchain-core>=0.1.0", "crewai>=0.1.0", "openai>=1.0.0", "textual>=0.50.0"]
+dashboard = ["fastapi", "uvicorn", "sse-starlette"]
+all = ["langchain-core>=0.1.0", "crewai>=0.1.0", "openai>=1.0.0", "fastapi", "uvicorn", "sse-starlette"]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",

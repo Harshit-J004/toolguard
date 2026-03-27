@@ -5,7 +5,6 @@ The `toolguard dashboard` CLI command.
 """
 
 import click
-import uvicorn
 import webbrowser
 import threading
 import time
