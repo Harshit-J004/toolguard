@@ -4,7 +4,7 @@
 
 **The "Cloudflare for AI Agents".** 6-layer security interceptor, real-time observability dashboard, and automated reliability testing for MCP and AI tool chains.
 
-![ToolGuard v5.0.0 Obsidian Dashboard](docs/images/dashboard_v5_hero.png)
+![ToolGuard v5.0.0 Obsidian Dashboard](docs/images/dashboard_v5_image.png)
 
 ### 🎮 Operations vs. 🛠️ Engineering
 
