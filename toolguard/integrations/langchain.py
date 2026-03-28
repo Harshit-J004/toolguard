@@ -44,12 +44,16 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
     if not isinstance(lc_tool, BaseTool):
         raise TypeError(f"Expected a LangChain BaseTool, got {type(lc_tool).__name__}")
 
-    # Extract the underlying Python function
+    # Extract the underlying Python function.
+    # We strictly prioritize asynchronous coroutines over sync functions to prevent
+    # thread-blocking inside highly concurrent AI swarms like CrewAI.
     func = None
-    if hasattr(lc_tool, "func") and callable(lc_tool.func):
-        func = lc_tool.func
-    elif hasattr(lc_tool, "coroutine") and callable(lc_tool.coroutine):
+    if hasattr(lc_tool, "coroutine") and callable(lc_tool.coroutine):
         func = lc_tool.coroutine
+    elif hasattr(lc_tool, "func") and callable(lc_tool.func):
+        func = lc_tool.func
+    elif hasattr(lc_tool, "_arun"):
+        func = lc_tool._arun
     elif hasattr(lc_tool, "_run"):
         # Check if _run is actually implemented (not just the abstract stub)
         try:
@@ -59,10 +63,12 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
                 func = lc_tool._run
         except (TypeError, OSError):
             func = lc_tool._run  # Can't inspect, assume it's real
-    if func is None and hasattr(lc_tool, "_arun"):
-        func = lc_tool._arun
-    else:
-        func = getattr(lc_tool, "ainvoke", lc_tool.invoke)
+            
+    if func is None:
+        func = getattr(lc_tool, "ainvoke", getattr(lc_tool, "invoke", None))
+            
+    if func is None:
+        raise ValueError(f"Could not extract an underlying function or coroutine from {lc_tool.name}")
 
     # Wrap the extracted function directly
     guarded = create_tool(schema="auto")(func)

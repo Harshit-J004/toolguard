@@ -4,15 +4,21 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
-## [5.1.1] - 2026-03-27
+## [5.1.1] - 2026-03-28
 
-### Added
+### Security Audit (The "Obsidian" Verification)
+- **Binary-Encoded Injection Defense**: Upgraded the recursive DFS memory scanner to natively decode and scan `bytes` and `bytearray` objects. This closes a critical evasion vector in both the core pipeline and the **MCP Interceptor**.
+- **Public Webhook Privacy**: Verified `strip_traceback=True` implementation for Slack, Discord, and Datadog to prevent source code leakage in public-facing alerting endpoints.
 - **Dynamic Dashboard Versioning**: Obsidian Dashboard now dynamically pulls the current ToolGuard version from `__init__.py` instead of hardcoding text fields.
 
 ### Fixed
 - **Dashboard Live Telemetry**: Replaced `MCPInterceptor` stub logging with a High-Performance File-Watcher pipeline (`_emit_trace()`). The interceptor now writes JSON events directly to `.toolguard/mcp_traces/`, enabling pure real-time streaming to the dashboard HUD without blocking the upstream agent.
+- **Framework Async Deadlock**: Patched a critical bug in **LangChain** and **CrewAI** adapters where synchronous `.func` shadowing was causing asynchronous `.coroutine` and `._arun` paths to be skipped.
+- **Coverage Math**: Fixed a calculation overflow in the Console Reporter where coverage percentiles could structurally exceed 100% under aggressive prompt injection fuzzing.
 - Synchronized visual assets and high-res Obsidian image for README/PyPI.
 - Updated "Operations vs. Engineering" workflow guide.
+
+
 
 ## [5.0.0] - 2026-03-27
 

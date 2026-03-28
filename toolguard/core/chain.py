@@ -231,6 +231,11 @@ def _contains_payload(obj: typing.Any, payload: str, visited: set | None = None)
         return any(_contains_payload(item, payload, visited) for item in obj)
     elif hasattr(obj, '__dict__'):
         return _contains_payload(obj.__dict__, payload, visited)
+    elif isinstance(obj, (bytes, bytearray)):
+        try:
+            return target_payload in obj.decode("utf-8", errors="ignore").casefold()
+        except Exception:
+            return False
     else:
         return target_payload in str(obj).casefold()
 

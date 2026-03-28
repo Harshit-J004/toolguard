@@ -38,8 +38,12 @@ def guard_crewai_tool(crewai_tool: Any) -> GuardedTool:
         )
 
     # Extract the underlying Python function
+    # We strictly prioritize asynchronous coroutines over sync functions to prevent
+    # thread-blocking inside highly concurrent AI swarms like CrewAI.
     func = None
-    if hasattr(crewai_tool, "func") and callable(crewai_tool.func):
+    if hasattr(crewai_tool, "_arun"):
+        func = crewai_tool._arun
+    elif hasattr(crewai_tool, "func") and callable(crewai_tool.func):
         func = crewai_tool.func
     elif hasattr(crewai_tool, "_run"):
         # Check if _run is actually implemented (not just the abstract stub)
@@ -50,8 +54,6 @@ def guard_crewai_tool(crewai_tool: Any) -> GuardedTool:
                 func = crewai_tool._run
         except (TypeError, OSError):
             func = crewai_tool._run  # Can't inspect, assume it's real
-    if func is None and hasattr(crewai_tool, "_arun"):
-        func = crewai_tool._arun
     
     if func is None and callable(crewai_tool):
         func = crewai_tool
