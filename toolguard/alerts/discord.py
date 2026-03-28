@@ -21,7 +21,7 @@ def send_discord_alert(webhook_url: str, alert_data: dict) -> None:
     embed = {
         "title": title,
         "color": 16711680 if alert_data["is_schema_error"] else 16753920, # Red or Orange
-        "description": f"**Error details:**\n```\n{alert_data['error_msg']}\n```\n**Attempted JSON Payload:**\n```json\n{payload_str}\n```",
+        "description": f"**Error details:**\n```\n{alert_data['error_msg']}\n```\n**Traceback:**\n```python\n{alert_data['traceback']}\n```\n**Attempted JSON Payload:**\n```json\n{payload_str}\n```",
         "timestamp": alert_data["timestamp"],
         "footer": {
             "text": f"UUID: {alert_data['correlation_id']} | ToolGuard"

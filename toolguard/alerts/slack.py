@@ -42,6 +42,13 @@ def send_slack_alert(webhook_url: str, alert_data: dict) -> None:
             }
         },
         {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Traceback:*\n```python\n{alert_data['traceback']}\n```"
+            }
+        },
+        {
             "type": "context",
             "elements": [
                 {
