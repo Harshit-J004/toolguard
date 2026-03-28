@@ -8,7 +8,7 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ### Security Audit (The "Obsidian" Verification)
 - **Binary-Encoded Injection Defense**: Upgraded the recursive DFS memory scanner to natively decode and scan `bytes` and `bytearray` objects. This closes a critical evasion vector in both the core pipeline and the **MCP Interceptor**.
-- **Public Webhook Privacy**: Verified `strip_traceback=True` implementation for Slack, Discord, and Datadog to prevent source code leakage in public-facing alerting endpoints.
+- **Public Webhook Privacy**: Verified `strip_traceback=True` implementation for Slack, Discord, and Datadog to prevent source code leakage. **Updated Slack/Discord formatters** to natively render the `traceback` (or "STRIPPED" notice) in the final UI notification.
 - **Dynamic Dashboard Versioning**: Obsidian Dashboard now dynamically pulls the current ToolGuard version from `__init__.py` instead of hardcoding text fields.
 
 ### Fixed
