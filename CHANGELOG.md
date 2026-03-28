@@ -4,9 +4,13 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
-## [5.0.1] - 2026-03-27
+## [5.1.1] - 2026-03-27
+
+### Added
+- **Dynamic Dashboard Versioning**: Obsidian Dashboard now dynamically pulls the current ToolGuard version from `__init__.py` instead of hardcoding text fields.
 
 ### Fixed
+- **Dashboard Live Telemetry**: Replaced `MCPInterceptor` stub logging with a High-Performance File-Watcher pipeline (`_emit_trace()`). The interceptor now writes JSON events directly to `.toolguard/mcp_traces/`, enabling pure real-time streaming to the dashboard HUD without blocking the upstream agent.
 - Synchronized visual assets and high-res Obsidian image for README/PyPI.
 - Updated "Operations vs. Engineering" workflow guide.
 

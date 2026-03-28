@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sse_starlette.sse import EventSourceResponse
+import toolguard
 
 # Constants
 TRACES_DIR = Path(".toolguard/mcp_traces")
@@ -25,7 +26,9 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 async def root():
     """Serve the main Live Dashboard HTML."""
     index_path = STATIC_DIR / "index.html"
-    return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
+    html = index_path.read_text(encoding="utf-8")
+    html = html.replace("{{VERSION}}", toolguard.__version__)
+    return HTMLResponse(content=html)
 
 def get_all_traces():
     """Read and parse all trace files, sorted by time (newest first)."""

@@ -14,11 +14,13 @@ Applies the following checks to every `tools/call` request:
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import time
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from toolguard.mcp.policy import MCPPolicy
@@ -168,11 +170,13 @@ class MCPInterceptor:
         # ── Layer 1: Policy Check ──
         if self.policy.is_blocked(tool_name):
             self._log("BLOCKED", tool_name, "Tool is permanently blocked by policy")
-            return InterceptResult(
+            result = InterceptResult(
                 allowed=False,
                 reason=f"Tool '{tool_name}' is blocked by security policy.",
                 layer="policy",
             )
+            self._emit_trace(tool_name, arguments, result)
+            return result
 
         # ── Layer 2: Risk Tier Gate ──
         tier = self.policy.get_risk_tier(tool_name)
@@ -181,32 +185,38 @@ class MCPInterceptor:
             approved = self._request_approval(tool_name, arguments)
             if not approved:
                 self._log("DENIED", tool_name, "Human denied tier-2 tool execution")
-                return InterceptResult(
+                result = InterceptResult(
                     allowed=False,
                     reason=f"Tool '{tool_name}' requires human approval (risk tier {tier}). Denied.",
                     layer="risk_tier",
                 )
+                self._emit_trace(tool_name, arguments, result)
+                return result
 
         # ── Layer 3: Prompt Injection Scan ──
         if self.policy.should_scan_injection(tool_name):
             injection_match = _scan_value_for_injection(arguments)
             if injection_match:
                 self._log("INJECTION", tool_name, f"Matched pattern: {injection_match}")
-                return InterceptResult(
+                result = InterceptResult(
                     allowed=False,
                     reason=f"Prompt injection detected in arguments for '{tool_name}'. Pattern: {injection_match}",
                     layer="injection",
                 )
+                self._emit_trace(tool_name, arguments, result)
+                return result
 
         # ── Layer 4: Rate Limiting ──
         limit = self.policy.get_rate_limit(tool_name)
         if not self._rate_limiter.check(tool_name, limit):
             self._log("RATE_LIMITED", tool_name, f"Exceeded {limit} calls/min")
-            return InterceptResult(
+            result = InterceptResult(
                 allowed=False,
                 reason=f"Tool '{tool_name}' rate limited ({limit} calls/min exceeded).",
                 layer="rate_limit",
             )
+            self._emit_trace(tool_name, arguments, result)
+            return result
 
         # ── Layer 5: Semantic Policy ──
         if self._semantic_engine.has_constraints(tool_name):
@@ -215,11 +225,13 @@ class MCPInterceptor:
             )
             if not sem_result.allowed:
                 self._log("SEMANTIC", tool_name, sem_result.reason)
-                return InterceptResult(
+                result = InterceptResult(
                     allowed=False,
                     reason=f"[Semantic Policy] {sem_result.reason}",
                     layer="semantic",
                 )
+                self._emit_trace(tool_name, arguments, result)
+                return result
 
         # ── Layer 6: Trace Logging ──
         self._session.record_call(tool_name, arguments)
@@ -231,7 +243,9 @@ class MCPInterceptor:
         })
 
         self._log("ALLOWED", tool_name, "All 6 layers passed")
-        return InterceptResult(allowed=True)
+        result = InterceptResult(allowed=True, layer="trace")
+        self._emit_trace(tool_name, arguments, result)
+        return result
 
     @property
     def trace(self) -> list[dict[str, Any]]:
@@ -252,6 +266,26 @@ class MCPInterceptor:
             return response in ("y", "yes")
         except (EOFError, KeyboardInterrupt):
             return False
+
+    def _emit_trace(self, tool_name: str, arguments: dict, result: InterceptResult) -> None:
+        """Write a trace JSON file for the Obsidian Dashboard's SSE file watcher."""
+        try:
+            trace_dir = Path(".toolguard/mcp_traces")
+            trace_dir.mkdir(parents=True, exist_ok=True)
+
+            trace_data = {
+                "tool": tool_name,
+                "arguments": arguments,
+                "timestamp": time.time(),
+                "decision": "ALLOWED" if result.allowed else "BLOCKED",
+                "layer": result.layer,
+                "reason": result.reason,
+            }
+
+            file_path = trace_dir / f"trace_{int(time.time() * 1000)}.json"
+            file_path.write_text(json.dumps(trace_data), encoding="utf-8")
+        except Exception:
+            pass
 
     def _log(self, status: str, tool_name: str, detail: str) -> None:
         """Log interceptor decisions to stderr if verbose mode is on."""

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-toolguard"
-version = "5.0.1"
+version = "5.1.1"
 description = "Cloudflare for AI Agents. 6-layer security interceptor and observability dashboard."
 readme = "README.md"
 license = {text = "MIT"}
