@@ -124,7 +124,7 @@ class MCPProxy:
         arguments = params.get("arguments", {})
         request_id = msg.get("id")
 
-        # Run the 5-layer interceptor
+        # Run the 6-layer interceptor
         result = self.interceptor.intercept(tool_name, arguments)
 
         if result.allowed:
