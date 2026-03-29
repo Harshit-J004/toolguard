@@ -160,7 +160,7 @@ def fetch_price(ticker: str) -> dict:
 ```
 
 ### 🔗 Chain Testing
-Test multi-tool chains against **8 edge-case categories**: null handling, type mismatches, missing fields, malformed data, large payloads, and more.
+Test multi-tool chains against **9 edge-case categories**: null handling, type mismatches, missing fields, malformed data, large payloads, and more.
 
 ```python
 report = test_chain(
@@ -223,7 +223,7 @@ toolguard replay .toolguard/failures/fail_1774068587_0.json
 ```
 
 ### 🎯 Edge-Case Test Coverage
-ToolGuard gives you PyTest-style coverage metrics. Instead of arbitrary line-coverage, it calculates exactly what percentage of the 8 known LLM hallucination categories (nulls, missing fields, type mismatches, etc.) your tests successfully covered, and lists what is untested.
+ToolGuard gives you PyTest-style coverage metrics. Instead of arbitrary line-coverage, it calculates exactly what percentage of the 9 known LLM hallucination categories (nulls, missing fields, type mismatches, etc.) your tests successfully covered, and lists what is untested.
 
 ### ⚡ The Minimal API
 For rapid Jupyter Notebook testing and quick demos, use the highly portable 1-line Python wrapper.
