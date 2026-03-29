@@ -266,6 +266,19 @@ toolguard init --name my_project                   # 🏗️ Scaffold a new proj
 
 ## 🔌 Native Framework Integrations
 
+ToolGuard is fully drop-in ready for the following **10 native frameworks and protocols**:
+
+- **🦜🔗 LangChain**: Native `BaseTool` wrapping with `guard_langchain_tool`.
+- **🚀 CrewAI**: Native `crewai.tools.BaseTool` interception.
+- **🦙 LlamaIndex**: Complete support for `FunctionTool`.
+- **🤖 Microsoft AutoGen**: Native `autogen_core` tool-calling wrapping.
+- **🐝 OpenAI Swarm**: 1-line agent tool-guarding with `guard_swarm_agent`.
+- **🧪 OpenAI Assistants**: Native SDK support for function-calling threads.
+- **♊ Google Gemini (ADK)**: Native Google AI SDK tool-calling security.
+- **⚡ FastAPI**: Automatic security middleware for Tool/Action endpoints.
+- **🛠️ OpenAI Function Calling**: Clean, standard `tools` dictionary export.
+- **🌐 Anthropic MCP (Protocol)**: Language-agnostic transport-level proxy (JS/Go/Rust).
+
 ToolGuard works with your existing tools. No rewrites needed — just wrap and fuzz.
 
 ```python
