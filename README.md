@@ -181,6 +181,17 @@ toolguard dashboard
 
 It streams live concurrent security interventions via SSE (Server-Sent Events) and tracks precisely which functions get blocked under payload injection. Built with a dedicated hacker-style "Terminal Elite" aesthetic, featuring a real-time **Sentinel HUD (L1-L6)** and structural DAG timeline analysis.
 
+### 🛡️ Anthropic MCP Security Proxy (v5.1.0)
+ToolGuard now includes a language-agnostic **Secure Proxy** for the Model Context Protocol. It sits between your MCP client (Claude Desktop, etc.) and your MCP server, enforcing the 6-layer security mesh at the transport level.
+
+```bash
+# Secure any MCP server with the ToolGuard firewall
+toolguard proxy --upstream "python mcp_server.py" --port 8000 --verbose
+# Apply a specific security policy (Golden Traces, Risk Tiers)
+toolguard proxy --upstream "npx dev-server" --policy policy.yaml
+```
+This is the only version of ToolGuard that allows you to secure agents built in **JavaScript, Go, or Rust** by intercepting the raw JSON-RPC tool-calling payloads.
+
 ### 📊 Reliability Scoring
 Quantified trust with risk levels and deployment gates.
 
@@ -225,18 +236,17 @@ breaker = CircuitBreaker(failure_threshold=5, reset_timeout=60)
 def call_flaky_service(data: dict) -> dict: ...
 ```
 
-### 🖥️ CLI
+### 🖥️ CLI Commands
 ```bash
-toolguard proxy --upstream "mcp-server.py"         # Run the raw JSON-RPC 6-layer MCP proxy
-toolguard dashboard                                # 🦇 Launch the Obsidian web dashboard
-toolguard run my_agent.py                          # Zero-config auto-test
-toolguard test --chain my_chain.yaml               # YAML-based chain test
-toolguard test --chain my_chain.yaml --html out.html  # HTML report
-toolguard test --chain my_chain.yaml --junit-xml out.xml  # JUnit XML for CI
-toolguard badge                                    # Generate reliability badge
-toolguard check --tools my_tools.py                # Check compatibility
-toolguard observe --tools my_tools.py              # View tool stats
-toolguard init --name my_project                   # Scaffold project
+toolguard proxy --upstream "mcp-server.py"         # 🛡️ Run the language-agnostic 6-layer MCP proxy
+toolguard dashboard                                # 🦇 Launch the Obsidian live web dashboard
+toolguard run my_agent.py                          # 🚀 Zero-config auto-fuzz/test
+toolguard test --chain my_chain.yaml               # 🧪 YAML-based chain test
+toolguard replay fail_17740.json                   # ⏪ Local crash replay for debugging
+toolguard badge                                    # 📛 Generate a dynamic reliability badge
+toolguard check --tools my_tools.py                # 🔍 Check Python tool compatibility
+toolguard observe --tools my_tools.py              # 📈 View tool performance stats
+toolguard init --name my_project                   # 🏗️ Scaffold a new project
 ```
 
 ---
