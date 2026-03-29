@@ -186,7 +186,7 @@ ToolGuard now includes a language-agnostic **Secure Proxy** for the Model Contex
 
 ```bash
 # Secure any MCP server with the ToolGuard firewall
-toolguard proxy --upstream "python mcp_server.py" --port 8000 --verbose
+toolguard proxy --upstream "python mcp_server.py" --verbose
 # Apply a specific security policy (Golden Traces, Risk Tiers)
 toolguard proxy --upstream "npx dev-server" --policy policy.yaml
 ```
