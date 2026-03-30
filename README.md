@@ -4,7 +4,7 @@
 
 **The "Cloudflare for AI Agents".** 6-layer security interceptor, real-time observability dashboard, and automated reliability testing for MCP and AI tool chains.
 
-![ToolGuard v5.1.1 Obsidian Dashboard](docs/images/dashboard_v5_hero.png)
+![ToolGuard v5.1.2 Obsidian Dashboard](docs/images/dashboard_v5_hero.png)
 
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -137,8 +137,8 @@ ToolGuard features an impenetrable execution-layer security framework protecting
 - **Golden Traces (DAG Instrumentation):** With two lines of code (`with TraceTracker() as trace:`), ToolGuard natively intercepts Python `contextvars` to construct a chronologically perfect Directed Acyclic Graph of all tools orchestrated by LangChain, CrewAI, Swarm, and AutoGen.
 - **Non-Deterministic Verification:** Punishing an AI for self-correcting is an anti-pattern. Developers use `trace.assert_sequence(["auth", "refund"])` to mathematically enforce mandatory compliance checkpoints while permitting the LLM complete freedom to autonomously select supplementary network tools.
 
-### 🛡️ 6-Layer Security Interceptor Waterfall (v5.1.1)
-With the v5.1.1 Update, we are moving beyond simple validation. We are introducing a 6-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
+### 🛡️ 6-Layer Security Interceptor Waterfall (v5.1.2)
+With the v5.1.2 Update, we are moving beyond simple validation. We are introducing a 6-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
 
 1. **L1 — Policy**: An immutable “Allow/Deny” list. Stop dangerous tools from ever being contacted.
 2. **L2 — Risk-Tier (Human-in-the-Loop Safe)**: Marks destructive tools (like `shutdown_server` or `delete_all`). These calls are frozen until a human approves via a zero-latency terminal prompt, running in an isolated worker so the main event loop stays alive.
@@ -148,7 +148,7 @@ With the v5.1.1 Update, we are moving beyond simple validation. We are introduci
 6. **L6 — Real-Time Trace**: Full DAG instrumentation of every execution via Python `contextvars`, with per-tool latency metrics on every `TraceNode`.
 
 ### ⚡ Performance as a Security Feature (0ms Latency)
-High security usually means high overhead. Not here. We’ve mathematically proven that ToolGuard v5.1.1 adds **0ms of net latency** to the agent’s transaction. All alerting (Slack, Discord, Datadog) is offloaded to background worker pools. Your agent stays fast; your security stays tight.
+High security usually means high overhead. Not here. We’ve mathematically proven that ToolGuard v5.1.2 adds **0ms of net latency** to the agent’s transaction. All alerting (Slack, Discord, Datadog) is offloaded to background worker pools. Your agent stays fast; your security stays tight.
 
 ### 🔍 Schema Validation
 Automatic Pydantic input/output validation from type hints. No manual schemas needed.

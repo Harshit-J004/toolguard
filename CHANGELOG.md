@@ -4,6 +4,14 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
+## [5.1.2] - 2026-03-30
+
+### Documentation Sync
+- **PyPI README Update**: Synchronized the PyPI package page with the latest README, including the 6-Layer Security Interceptor Waterfall, 0ms Latency proof, MCP Proxy commands, and the 10-framework integration catalog.
+- **Edge-Case Accuracy**: Corrected hallucination category count from 8 to 9 across all documentation to match the source code (`TestCaseType` enum).
+
+---
+
 ## [5.1.1] - 2026-03-28
 
 ### Security Audit (The "Obsidian" Verification)

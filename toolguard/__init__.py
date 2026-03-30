@@ -14,7 +14,7 @@ Usage:
     report = test_chain([get_weather, process, alert], assert_reliability=0.95)
 """
 
-__version__ = "5.1.1"
+__version__ = "5.1.2"
 __author__ = "ToolGuard Contributors"
 
 import typing
