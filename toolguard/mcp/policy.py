@@ -48,8 +48,13 @@ class MCPPolicy:
             self.auto_approve = True
 
     def get_tool_policy(self, tool_name: str) -> ToolPolicy:
-        """Get the policy for a specific tool, falling back to defaults."""
-        return self.tools.get(tool_name, self.defaults)
+        """Get the policy for a specific tool, falling back to defaults.
+        
+        Hardened: Automatically normalizes tool names (case-insensitive & stripped)
+        to prevent casing bypasses.
+        """
+        name = tool_name.strip().casefold()
+        return self.tools.get(name, self.defaults)
 
     def is_blocked(self, tool_name: str) -> bool:
         return self.get_tool_policy(tool_name).blocked
@@ -94,7 +99,9 @@ class MCPPolicy:
 
         tools = {}
         for tool_name, tool_data in data.get("tools", {}).items():
-            tools[tool_name] = ToolPolicy(
+            # Hardened: Store normalized names to prevent protocol spoofing
+            name = tool_name.strip().casefold()
+            tools[name] = ToolPolicy(
                 risk_tier=tool_data.get("risk_tier", defaults.risk_tier),
                 rate_limit=tool_data.get("rate_limit", defaults.rate_limit),
                 blocked=tool_data.get("blocked", defaults.blocked),

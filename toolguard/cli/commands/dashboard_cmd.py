@@ -45,3 +45,6 @@ def dashboard(port: int, host: str, no_browser: bool):
         port=port,
         log_level="error",  # Keep the terminal clean
     )
+
+if __name__ == "__main__":
+    dashboard()

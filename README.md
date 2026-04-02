@@ -2,15 +2,15 @@
 
 # 🛡️ ToolGuard
 
-**The "Cloudflare for AI Agents".** 6-layer security interceptor, real-time observability dashboard, and automated reliability testing for MCP and AI tool chains.
+**The "Cloudflare for AI Agents".** 7-layer security interceptor, real-time observability dashboard, and automated reliability testing for MCP and AI tool chains.
 
-![ToolGuard v5.1.2 Obsidian Dashboard](docs/images/dashboard_v5_hero.png)
+![ToolGuard v6.0.0 Dashboard](docs/images/dashboard_v6_hardened.png)
 
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
 [![Integrations](https://img.shields.io/badge/integrations-10%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
-[![Security](https://img.shields.io/badge/security-6%20layer%20firewall-critical?style=flat-square)](#)
+[![Security](https://img.shields.io/badge/firewall-v6.0.0--Hardened-critical?style=flat-square&logo=shield)](#-7-layer-security-interceptor-waterfall-v600)
 
 </div>
 
@@ -29,6 +29,7 @@
 *   **Rapid Iteration**: You just changed one line of code and want a 1-second "Fuzz Check" without leaving your IDE.
 *   **Headless Servers**: You’re deploying to a Docker container or AWS/GCP where you don't have a web browser.
 *   **Local Replay**: Using `toolguard replay` to step through a specific failure payload you found earlier. ⚡
+*   **Schema Drift Enforcement**: Using `toolguard drift check --fail-on-drift` in your CI/CD to ensure the LLM hasn't silently mutated its JSON payload structure since your last commit.
 
 Catch cascading failures before production. Make agent tool calling as predictable as unit tests made software reliable.
 
@@ -137,15 +138,20 @@ ToolGuard features an impenetrable execution-layer security framework protecting
 - **Golden Traces (DAG Instrumentation):** With two lines of code (`with TraceTracker() as trace:`), ToolGuard natively intercepts Python `contextvars` to construct a chronologically perfect Directed Acyclic Graph of all tools orchestrated by LangChain, CrewAI, Swarm, and AutoGen.
 - **Non-Deterministic Verification:** Punishing an AI for self-correcting is an anti-pattern. Developers use `trace.assert_sequence(["auth", "refund"])` to mathematically enforce mandatory compliance checkpoints while permitting the LLM complete freedom to autonomously select supplementary network tools.
 
-### 🛡️ 6-Layer Security Interceptor Waterfall (v5.1.2)
-With the v5.1.2 Update, we are moving beyond simple validation. We are introducing a 6-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
+### 🛡️ 7-Layer Security Interceptor Waterfall (v6.0.0)
+With the v6.0.0 Update, we are moving beyond simple validation. We are introducing a 7-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
 
-1. **L1 — Policy**: An immutable “Allow/Deny” list. Stop dangerous tools from ever being contacted.
-2. **L2 — Risk-Tier (Human-in-the-Loop Safe)**: Marks destructive tools (like `shutdown_server` or `delete_all`). These calls are frozen until a human approves via a zero-latency terminal prompt, running in an isolated worker so the main event loop stays alive.
-3. **L3 — Deep-Memory Injection Defense**: Our most advanced scanner yet. A recursive DFS parser that natively decodes binary streams (`bytes`/`bytearray`) to detect hidden prompt injections that bypass surface-level text filters.
-4. **L4 — Rate-Limit**: A sliding-window cap to prevent LLM loops from burning your API budget.
-5. **L5 — Semantic Validation**: catches `DROP TABLE` or path traversal before execution.
-6. **L6 — Real-Time Trace**: Full DAG instrumentation of every execution via Python `contextvars`, with per-tool latency metrics on every `TraceNode`.
+1. **L1 — Policy**: An immutable “Allow/Deny” list with absolute casing normalization. Stop dangerous tools from ever being contacted.
+2. **L2 — Risk-Tier (Human-in-the-Loop Safe)**: Marks destructive tools (like `shutdown_server` or `delete_all`). These calls are frozen until a human approves via a zero-latency terminal prompt, running in an isolated worker so the main event loop stays alive. **If deployed to a headless Docker/AWS environment without a terminal, it automatically detects the state and Fail-Closes instantly to prevent infinite thread deadlocks.**
+3. **L3 — Deep-Memory Injection Defense**: Our most advanced scanner yet. A recursive DFS parser that natively decodes binary streams (`bytes`/`bytearray`) to detect hidden prompt injections that bypass surface-level text filters, **and utilizes strict depth limits to prevent Stack-Buster DoS attacks.**
+4. **L4 — Rate-Limit**: A sliding-window cap to prevent LLM loops from burning your API budget. **Now built with strictly thread-safe, atomic JSON disk-persistence to survive server "Restart Amnesia."**
+5. **L5 — Semantic Validation**: catches `DROP TABLE` or path traversal before execution. **Now structurally powered by an Obfuscation Unroller that automatically intercepts URL-encoded and Base64-masked payloads (`L2V0Yy9wYXNzd2Q=`) prior to canonical evaluation.**
+6. **L6 — Strict Schema Drift Enforcement**: Our most rigorous layer. Compares live LLM tool payloads against frozen structural baselines. Unlike other tools that just log changes, **ToolGuard blocks any unauthorized field additions** (Major Severity) to prevent data exfiltration and "shadow" agent behavior. **Powered by a pristine SQLite backend configured with `PRAGMA WAL` and 30-Second Thread Queuing to elegantly survive 200+ concurrent LangGraph connections.**
+7. **L7 — Real-Time Trace**: Full DAG instrumentation of every execution via Python `contextvars`, with per-tool latency metrics on every `TraceNode`. **Asynchronous JSON dump files are continuously pushed locally to power live SSE observability dashboards without blocking proxy execution.**
+
+### 📉 Schema Drift Detection Engine (L6)
+LLM providers silently update their models. A payload that historically returned integers might suddenly return strings, instantly crashing your type-strict backend.
+ToolGuard's structural diffing engine infers JSON Schema constraints from live data, freezes them into cryptographic SQLite fingerprints, and violently rejects structural deviations (like renaming `temperature` to `temp`) before they reach your network edge.
 
 ### ⚡ Performance as a Security Feature (0ms Latency)
 High security usually means high overhead. Not here. We’ve mathematically proven that ToolGuard v5.1.2 adds **0ms of net latency** to the agent’s transaction. All alerting (Slack, Discord, Datadog) is offloaded to background worker pools. Your agent stays fast; your security stays tight.
@@ -157,6 +163,30 @@ Automatic Pydantic input/output validation from type hints. No manual schemas ne
 @create_tool(schema="auto")
 def fetch_price(ticker: str) -> dict:
     ...
+```
+
+### 📉 Schema Drift Management
+When using models like GPT-5.4 or Gemini 3.1 Flash, they can silently change field names (e.g., `temperature` to `temp`), field types, or drop required fields.
+ToolGuard `v6.0.0` allows you to take cryptographic "snapshots" of what the payload *should* look like, and then block live traffic or fail CI/CD builds if the model drifts from that baseline.
+
+**Step 1: Freeze Your Baseline** (Run this locally when you build your agent)
+```bash
+# Take a snapshot from a known-good JSON payload saved to a file
+# Note: The -m flag accepts ANY string! (e.g., 'gpt-5.4', 'claude-4.6-sonnet', 'gemini-3.1-flash')
+toolguard drift snapshot -o output.json -t update_metrics -m claude-4.6-sonnet
+
+# OR extract the baseline directly from your Pydantic schemas
+toolguard drift snapshot-pydantic src/agent_schema.py
+
+# View your active baseline repository
+toolguard drift list
+```
+
+**Step 2: Enforce the Baseline** (Run this in your GitHub Actions / CI pipeline)
+```bash
+# Automatically scans all recent execution traces. 
+# If the LLM has started hallucinating different JSON structures, the build fails.
+toolguard drift check --fail-on-drift
 ```
 
 ### 🔗 Chain Testing
@@ -192,10 +222,10 @@ ToolGuard includes a stunning, high-contrast, dark-mode web dashboard for monito
 toolguard dashboard
 ```
 
-It streams live concurrent security interventions via SSE (Server-Sent Events) and tracks precisely which functions get blocked under payload injection. Built with a dedicated hacker-style "Terminal Elite" aesthetic, featuring a real-time **Sentinel HUD (L1-L6)** and structural DAG timeline analysis.
+It streams live concurrent security interventions via SSE (Server-Sent Events) and tracks precisely which functions get blocked under payload injection. Built with a dedicated hacker-style "Terminal Elite" aesthetic, featuring a real-time **Sentinel HUD (L1-L7)** and structural DAG timeline analysis.
 
 ### 🛡️ Anthropic MCP Security Proxy (v5.1.0)
-ToolGuard now includes a language-agnostic **Secure Proxy** for the Model Context Protocol. It sits between your MCP client (Claude Desktop, etc.) and your MCP server, enforcing the 6-layer security mesh at the transport level.
+ToolGuard now includes a language-agnostic **Secure Proxy** for the Model Context Protocol. It sits between your MCP client (Claude Desktop, etc.) and your MCP server, enforcing the 7-layer security mesh at the transport level.
 
 ```bash
 # Secure any MCP server with the ToolGuard firewall
@@ -251,15 +281,22 @@ def call_flaky_service(data: dict) -> dict: ...
 
 ### 🖥️ CLI Commands
 ```bash
-toolguard proxy --upstream "mcp-server.py"         # 🛡️ Run the language-agnostic 6-layer MCP proxy
+toolguard proxy --upstream "mcp-server.py"         # 🛡️ Run the language-agnostic 7-layer MCP proxy
 toolguard dashboard                                # 🦇 Launch the Obsidian live web dashboard
 toolguard run my_agent.py                          # 🚀 Zero-config auto-fuzz/test
 toolguard test --chain my_chain.yaml               # 🧪 YAML-based chain test
 toolguard replay fail_17740.json                   # ⏪ Local crash replay for debugging
-toolguard badge                                    # 📛 Generate a dynamic reliability badge
-toolguard check --tools my_tools.py                # 🔍 Check Python tool compatibility
+toolguard badge                <div class="cmd-line">
+                    <span class="cmd-prefix">$</span><span class="cmd-text">toolguard monitor --live --v6.0.0-Hardened --obsidian</span>
+                </div># 🔍 Check Python tool compatibility
 toolguard observe --tools my_tools.py              # 📈 View tool performance stats
 toolguard init --name my_project                   # 🏗️ Scaffold a new project
+
+# Schema Drift Commands
+toolguard drift snapshot                           # 📸 Freeze a payload baseline
+toolguard drift snapshot-pydantic my_models.py     # 📸 Freeze Pydantic classes natively
+toolguard drift check --fail-on-drift              # 🔒 Test logs against frozen baselines (CI/CD)
+toolguard drift list                               # 📜 List all frozen Schema baselines
 ```
 
 ---
@@ -340,8 +377,10 @@ guarded = as_fastapi_tool(my_endpoint_function)
 
 All 10 integrations tested with **real pip-installed libraries** — not mocks, not duck-types.
 
-### 🧹 100% Authentic Testing
-ToolGuard's integration suite runs exclusively against the *actual* PyPI codebase implementations of LangChain, AutoGen, Swarm, FastAPI, and CrewAI. There is absolutely no faked compatibility—it is mathematically proven against the live libraries. We deleted all fake "mock" tests to ensure the standard of reliability is pristine.
+### 🧹 100% Authentic Testing (Zero-Mock Swarm Testing)
+ToolGuard's integration suite runs exclusively against the *actual* PyPI codebase implementations of LangChain, AutoGen, and Gemini. **We have mathematically verified the 7-Layer Firewall against live agentic LangGraph Swarms** over the internet using the real Google GenAI SDK. There is absolutely no faked compatibility—it is production-hardened for real-world execution.
+
+In our `live_langgraph_swarm.py` tests, 3 separate Google Gemini Flash models are launched concurrently across the network to attack ToolGuard simultaneously. ToolGuard natively intercepts the live async network streams, instantly detects malicious Base64 executions, and securely halts them locally before they ever touch your operating system.
 
 ---
 
@@ -438,6 +477,8 @@ toolguard/
 │   ├── scoring.py        # Reliability scoring + deploy gates
 │   ├── report.py         # Failure analysis + suggestions
 │   ├── errors.py         # Exception hierarchy + correlation IDs
+│   ├── drift.py          # Schema Drift Detection Engine
+│   ├── drift_store.py    # SQLite fingerprint persistence (WAL mode)
 │   ├── retry.py          # RetryPolicy + CircuitBreaker
 │   ├── tracer.py         # OpenTelemetry integration
 │   └── compatibility.py  # Schema conflict detection

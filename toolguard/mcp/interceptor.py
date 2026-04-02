@@ -1,7 +1,7 @@
 """
 toolguard.mcp.interceptor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 6-layer security pipeline for MCP tool calls.
+The 7-layer security pipeline for MCP tool calls.
 
 Applies the following checks to every `tools/call` request:
   1. Policy Check     — Is this tool blocked?
@@ -9,7 +9,8 @@ Applies the following checks to every `tools/call` request:
   3. Injection Scan   — Does the payload contain prompt injection?
   4. Rate Limiting    — Has this tool exceeded its call frequency?
   5. Semantic Policy  — Does the argument content violate semantic rules?
-  6. Trace Logging    — Record the call in the execution DAG.
+  6. Schema Drift     — Does the payload match the frozen baseline structure?
+  7. Trace Logging    — Record the call in the execution DAG.
 """
 
 from __future__ import annotations
@@ -19,12 +20,15 @@ import os
 import sys
 import time
 import re
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from toolguard.mcp.policy import MCPPolicy
 from toolguard.mcp.semantic import SemanticEngine, SessionContext
+from toolguard.core.drift import detect_drift, SchemaFingerprint
+from toolguard.core.drift_store import FingerprintStore
 
 
 # ──────────────────────────────────────────────
@@ -48,25 +52,50 @@ class RateLimiter:
 
     def __init__(self):
         self._calls: dict[str, list[float]] = {}
+        self._lock = threading.Lock()
+        self._cache_file = Path(".toolguard/rate_limits.json")
+        self._load_cache()
+
+    def _load_cache(self) -> None:
+        try:
+            if self._cache_file.exists():
+                self._calls = json.loads(self._cache_file.read_text("utf-8"))
+        except Exception:
+            self._calls = {}
+
+    def _save_cache(self) -> None:
+        try:
+            self._cache_file.parent.mkdir(parents=True, exist_ok=True)
+            self._cache_file.write_text(json.dumps(self._calls), "utf-8")
+        except Exception:
+            pass
 
     def check(self, tool_name: str, limit: int) -> bool:
-        """Returns True if the call is allowed, False if rate-limited."""
+        """Returns True if the call is allowed, False if rate-limited.
+        
+        Hardened: Uses normalized tool names and explicit thread-locks to 
+        ensure atomic window updates under high production load.
+        """
+        name = tool_name.strip().casefold()
         now = time.time()
         window_start = now - 60.0  # 1-minute window
 
-        if tool_name not in self._calls:
-            self._calls[tool_name] = []
+        with self._lock:
+            if name not in self._calls:
+                self._calls[name] = []
 
-        # Prune old entries
-        self._calls[tool_name] = [
-            t for t in self._calls[tool_name] if t > window_start
-        ]
+            # Prune old entries
+            self._calls[name] = [
+                t for t in self._calls[name] if t > window_start
+            ]
 
-        if len(self._calls[tool_name]) >= limit:
-            return False
+            if len(self._calls[name]) >= limit:
+                self._save_cache()
+                return False
 
-        self._calls[tool_name].append(now)
-        return True
+            self._calls[name].append(now)
+            self._save_cache()
+            return True
 
 
 # ──────────────────────────────────────────────
@@ -85,20 +114,47 @@ _INJECTION_PATTERNS = [
     r"disregard\s+(all\s+)?(above|previous)",
     r"new\s+system\s+prompt",
     r"act\s+as\s+if\s+you\s+have\s+no\s+restrictions",
+    # Shell Injection / Command Execution Attack Patterns (2026 Rigor)
+    r"curl\s+.*\|\s+bash",
+    r"wget\s+.*\|\s+sh",
+    r"rm\s+-rf\s+(/|\.)",
+    r"DROP\s+TABLE",
+    r"chmod\s+777",
+    r"cat\s+/etc/passwd",
+    r"nc\s+-e\s+/bin/sh",
+    r"powershell\s+-Command",
+    r"base64\s+-d\s+.*\|\s+bash",
 ]
 
 _COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in _INJECTION_PATTERNS]
 
 
-def _scan_value_for_injection(value: Any, depth: int = 0) -> str | None:
+# Maximum recursion depth for security scans to prevent Stack-Buster DoS
+_MAX_SCAN_DEPTH = 50
+
+
+def _scan_value_for_injection(
+    value: Any, visited: set | None = None, depth: int = 0
+) -> str | None:
     """Recursively scan a value for prompt injection patterns.
     
     Returns the matched pattern string if found, None otherwise.
-    Uses depth-first search to traverse nested structures.
+    Uses a highly durable depth-first search memory scan that closes
+    zero-day structural evasion blind spots.
     """
-    if depth > 20:  # Prevent infinite recursion
-        return None
+    if visited is None:
+        visited = set()
+    
+    # 0. DoS Protection: Depth Limit
+    if depth > _MAX_SCAN_DEPTH:
+        return "[DEPTH_LIMIT_EXCEEDED]"
 
+    obj_id = id(value)
+    if obj_id in visited:
+        return None
+    visited.add(obj_id)
+
+    # 1. String Scan (Case-Insensitive)
     if isinstance(value, str):
         text = value.casefold()
         for pattern in _COMPILED_PATTERNS:
@@ -106,30 +162,81 @@ def _scan_value_for_injection(value: Any, depth: int = 0) -> str | None:
                 return pattern.pattern
         return None
 
+    # 2. Dictionary Scan (Keys and Values)
     if isinstance(value, dict):
-        for v in value.values():
-            result = _scan_value_for_injection(v, depth + 1)
-            if result:
-                return result
+        for k, v in value.items():
+            result = _scan_value_for_injection(k, visited, depth + 1) or \
+                     _scan_value_for_injection(v, visited, depth + 1)
+            if result: return result
+        return None
 
-    if isinstance(value, (list, tuple)):
+    # 3. Iterable Scan (Fragmentation Defense)
+    if isinstance(value, (list, tuple, set)):
+        # Detect and Defeat Fragmentation Attacks:
+        # If the iterable is a sequence of characters or very short strings,
+        # we join them to detect patterns that are split across elements.
+        if len(value) > 1:
+            try:
+                # Optimized join for homogenous character sequences
+                if all(isinstance(i, str) and len(i) <= 2 for i in value):
+                    joined = "".join(value).casefold()
+                    for pattern in _COMPILED_PATTERNS:
+                        if pattern.search(joined):
+                            return pattern.pattern
+            except Exception:
+                pass
+
         for item in value:
-            result = _scan_value_for_injection(item, depth + 1)
-            if result:
-                return result
+            result = _scan_value_for_injection(item, visited, depth + 1)
+            if result: return result
+        return None
 
-    # Scan object attributes (DFS into custom objects)
-    if hasattr(value, "__dict__") and not isinstance(value, type):
-        for v in vars(value).values():
-            result = _scan_value_for_injection(v, depth + 1)
-            if result:
-                return result
+    # 4. Binary Stream Scan (Multi-Encoding Support)
+    if isinstance(value, (bytes, bytearray)):
+        for encoding in ["utf-8", "utf-16", "latin-1"]:
+            try:
+                text = value.decode(encoding, errors="ignore").casefold()
+                for pattern in _COMPILED_PATTERNS:
+                    if pattern.search(text):
+                        return pattern.pattern
+            except Exception:
+                continue
+        return None
+
+    # 5. Object Scan (__dict__ and __slots__ Support)
+    if not isinstance(value, type):
+        # Scan __dict__ (Standard objects)
+        if hasattr(value, "__dict__"):
+            result = _scan_value_for_injection(vars(value), visited, depth + 1)
+            if result: return result
+        
+        # Scan __slots__ (High-performance objects)
+        if hasattr(value, "__slots__"):
+            slots = value.__slots__
+            if isinstance(slots, str): slots = (slots,)
+            for slot in slots:
+                try:
+                    attr_val = getattr(value, slot)
+                    result = _scan_value_for_injection(attr_val, visited, depth + 1)
+                    if result: return result
+                except AttributeError:
+                    continue
+
+    # 6. Fallback Stringification Scan
+    # Catch-all to prevent evasion via custom __str__ logic.
+    try:
+        text = str(value).casefold()
+        for pattern in _COMPILED_PATTERNS:
+            if pattern.search(text):
+                return pattern.pattern
+    except Exception:
+        pass
 
     return None
 
 
 # ──────────────────────────────────────────────
-#  The 5-Layer Interceptor
+#  The 7-Layer Interceptor
 # ──────────────────────────────────────────────
 
 class MCPInterceptor:
@@ -158,7 +265,7 @@ class MCPInterceptor:
         self._session = SessionContext()
 
     def intercept(self, tool_name: str, arguments: dict[str, Any]) -> InterceptResult:
-        """Run the full 6-layer security pipeline.
+        """Run the full 7-layer security pipeline.
         
         Args:
             tool_name: The MCP tool name from the `tools/call` request.
@@ -167,6 +274,14 @@ class MCPInterceptor:
         Returns:
             InterceptResult indicating whether the call is allowed or denied.
         """
+        start_time = time.perf_counter()
+
+        # Hardness Lockdown: Normalize tool name at entry point to prevent 
+        # protocol-level evasion across all 7 layers.
+        # Layer 7 Forensic Preservation: Original casing must be logged for auditing.
+        original_tool_name = tool_name
+        tool_name = tool_name.strip().casefold()
+
         # ── Layer 1: Policy Check ──
         if self.policy.is_blocked(tool_name):
             self._log("BLOCKED", tool_name, "Tool is permanently blocked by policy")
@@ -175,7 +290,8 @@ class MCPInterceptor:
                 reason=f"Tool '{tool_name}' is blocked by security policy.",
                 layer="policy",
             )
-            self._emit_trace(tool_name, arguments, result)
+            self._emit_trace(original_tool_name, arguments, result,
+                             latency_ms=(time.perf_counter() - start_time) * 1000)
             return result
 
         # ── Layer 2: Risk Tier Gate ──
@@ -190,20 +306,29 @@ class MCPInterceptor:
                     reason=f"Tool '{tool_name}' requires human approval (risk tier {tier}). Denied.",
                     layer="risk_tier",
                 )
-                self._emit_trace(tool_name, arguments, result)
+                self._emit_trace(original_tool_name, arguments, result,
+                                 latency_ms=(time.perf_counter() - start_time) * 1000)
                 return result
 
         # ── Layer 3: Prompt Injection Scan ──
         if self.policy.should_scan_injection(tool_name):
             injection_match = _scan_value_for_injection(arguments)
             if injection_match:
-                self._log("INJECTION", tool_name, f"Matched pattern: {injection_match}")
+                if injection_match == "[DEPTH_LIMIT_EXCEEDED]":
+                    reason = f"Security scan depth limit exceeded for '{tool_name}'. Potential Stack-Buster DoS attempt."
+                    layer = "injection_dos"
+                else:
+                    reason = f"Prompt injection detected in arguments for '{tool_name}'. Pattern: {injection_match}"
+                    layer = "injection"
+
+                self._log("INJECTION", tool_name, reason)
                 result = InterceptResult(
                     allowed=False,
-                    reason=f"Prompt injection detected in arguments for '{tool_name}'. Pattern: {injection_match}",
-                    layer="injection",
+                    reason=reason,
+                    layer=layer,
                 )
-                self._emit_trace(tool_name, arguments, result)
+                self._emit_trace(original_tool_name, arguments, result, 
+                                 latency_ms=(time.perf_counter() - start_time) * 1000)
                 return result
 
         # ── Layer 4: Rate Limiting ──
@@ -215,7 +340,8 @@ class MCPInterceptor:
                 reason=f"Tool '{tool_name}' rate limited ({limit} calls/min exceeded).",
                 layer="rate_limit",
             )
-            self._emit_trace(tool_name, arguments, result)
+            self._emit_trace(original_tool_name, arguments, result,
+                             latency_ms=(time.perf_counter() - start_time) * 1000)
             return result
 
         # ── Layer 5: Semantic Policy ──
@@ -230,10 +356,35 @@ class MCPInterceptor:
                     reason=f"[Semantic Policy] {sem_result.reason}",
                     layer="semantic",
                 )
-                self._emit_trace(tool_name, arguments, result)
+                self._emit_trace(original_tool_name, arguments, result, 
+                                 latency_ms=(time.perf_counter() - start_time) * 1000)
                 return result
 
-        # ── Layer 6: Trace Logging ──
+        # ── Layer 6: Schema Drift ──
+        # Execute the static-typed baseline diffing engine against incoming execution payloads
+        with FingerprintStore() as store:
+            baseline = store.get_latest_fingerprint_for_tool(tool_name)
+            
+        if baseline:
+
+            drift_report = detect_drift(baseline, arguments)
+            
+            # Critical enforcement block
+            if drift_report.has_drift and drift_report.severity in ("critical", "major"):
+                bad_drifts = [d for d in drift_report.drifts if d.severity in ("critical", "major")]
+                reason_str = ", ".join([f"[{d.drift_type}] {d.field}" for d in bad_drifts])
+                
+                self._log("DRIFT", tool_name, f"Structural drift detected: {reason_str}")
+                result = InterceptResult(
+                    allowed=False,
+                    reason=f"Silent prompt execution drift detected ({drift_report.severity.upper()}): {reason_str}",
+                    layer="drift",
+                )
+                self._emit_trace(original_tool_name, arguments, result, 
+                                 latency_ms=(time.perf_counter() - start_time) * 1000)
+                return result
+
+        # ── Layer 7: Trace Logging ──
         self._session.record_call(tool_name, arguments)
         self._trace_log.append({
             "tool": tool_name,
@@ -242,9 +393,10 @@ class MCPInterceptor:
             "decision": "ALLOWED",
         })
 
-        self._log("ALLOWED", tool_name, "All 6 layers passed")
+        self._log("ALLOWED", tool_name, "All 7 layers passed")
         result = InterceptResult(allowed=True, layer="trace")
-        self._emit_trace(tool_name, arguments, result)
+        self._emit_trace(original_tool_name, arguments, result,
+                         latency_ms=(time.perf_counter() - start_time) * 1000)
         return result
 
     @property
@@ -254,6 +406,16 @@ class MCPInterceptor:
 
     def _request_approval(self, tool_name: str, arguments: dict) -> bool:
         """Request human approval for a tier-2 tool via terminal."""
+        # 1. Docker Deadlock Prevention: Instantly fail-close in headless environments
+        if not sys.stdin.isatty() and not os.environ.get("TOOLGUARD_OS_PIPE_TEST"):
+            print(
+                f"\n🛡️  [ToolGuard MCP Proxy] HEADLESS ENFORCER\n"
+                f"   Terminal unavailable for Risk Tier 2 execution.\n"
+                f"   Auto-denying to prevent deadlock.",
+                file=sys.stderr,
+            )
+            return False
+
         try:
             print(
                 f"\n🛡️  [ToolGuard MCP Proxy] APPROVAL REQUIRED\n"
@@ -267,23 +429,30 @@ class MCPInterceptor:
         except (EOFError, KeyboardInterrupt):
             return False
 
-    def _emit_trace(self, tool_name: str, arguments: dict, result: InterceptResult) -> None:
+    def _emit_trace(self, tool_name: str, arguments: dict, result: InterceptResult, 
+                    latency_ms: float = 0.0) -> None:
         """Write a trace JSON file for the Obsidian Dashboard's SSE file watcher."""
         try:
             trace_dir = Path(".toolguard/mcp_traces")
             trace_dir.mkdir(parents=True, exist_ok=True)
 
+            timestamp_ms = int(time.time() * 1000)
+            node_id = hex(abs(hash(f"{tool_name}:{timestamp_ms}")))[2:8]
+            filename = f"trace_{timestamp_ms}_{node_id}.json"
+            trace_path = trace_dir / filename
+            
             trace_data = {
-                "tool": tool_name,
+                "tool": tool_name.strip().casefold(),
+                "raw_tool": tool_name,
                 "arguments": arguments,
                 "timestamp": time.time(),
+                "latency_ms": round(latency_ms, 3),
                 "decision": "ALLOWED" if result.allowed else "BLOCKED",
                 "layer": result.layer,
                 "reason": result.reason,
             }
 
-            file_path = trace_dir / f"trace_{int(time.time() * 1000)}.json"
-            file_path.write_text(json.dumps(trace_data), encoding="utf-8")
+            trace_path.write_text(json.dumps(trace_data), encoding="utf-8")
         except Exception:
             pass
 

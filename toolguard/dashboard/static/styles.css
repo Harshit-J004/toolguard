@@ -281,23 +281,47 @@ header.elite-header {
 }
 
 .trace-card.active {
-    background: #111111;
+    background: #121212;
     border-color: var(--accent-blue);
+    box-shadow: inset 2px 0 0 var(--accent-blue);
 }
 
-.trace-info { display: flex; gap: 1rem; align-items: center; }
-.trace-id { color: var(--text-dim); font-size: 0.75rem; width: 25px; }
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+}
 
-.trace-tool { color: #fff; font-weight: bold; }
-.trace-decision-tag {
+.timestamp { color: var(--text-dim); font-size: 0.7rem; }
+
+.latency-badge {
+    color: var(--accent-cyan);
     font-size: 0.7rem;
-    font-weight: 800;
-    padding: 1px 5px;
-    border-radius: 2px;
+    font-weight: 700;
 }
 
-.tag-allow { color: var(--accent-green); border: 1px solid var(--accent-green); }
-.tag-deny { color: var(--accent-red); border: 1px solid var(--accent-red); }
+.spoof-flag {
+    background: var(--accent-red);
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 0 4px;
+    border-radius: 2px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.status-pill {
+    padding: 10px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border-radius: 4px;
+}
+
+.status-deny { background: var(--accent-red-glow); color: var(--accent-red); border: 1px solid var(--accent-red); }
+.status-allow { background: var(--accent-green-glow); color: var(--accent-green); border: 1px solid var(--accent-green); }
+
+.danger-block { border-left: 2px solid var(--accent-red) !important; color: var(--accent-red) !important; }
 
 /* Inspector */
 .inspector-content { padding: 1.5rem; }

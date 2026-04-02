@@ -88,6 +88,37 @@ class SchemaValidationError(ToolGuardError):
         )
 
 
+class SchemaDriftError(ToolGuardError):
+    """Raised when an LLM provider silently alters a tool's output structure.
+    
+    Carries the full DriftReport detailing added, removed, or changed 
+    fields so applications can halt execution or failover safely.
+    """
+
+    def __init__(
+        self,
+        message: str = "Structural drift detected in LLM output.",
+        *,
+        tool_name: str = "",
+        model: str = "",
+        report: Any = None,  # DriftReport
+        correlation_id: str | None = None,
+    ) -> None:
+        self.model = model
+        self.report = report
+        
+        # Build action suggestion
+        suggestion = f"Update '{tool_name}' schema to support '{model}' changes."
+        if report and report.drifts:
+            suggestion = f"[{report.severity.upper()} Drift] {len(report.drifts)} field(s) diverged. {suggestion}"
+
+        super().__init__(
+            message,
+            tool_name=tool_name,
+            correlation_id=correlation_id,
+            suggestion=suggestion,
+        )
+
 # ──────────────────────────────────────────────────────────
 #  Approval & Security Errors
 # ──────────────────────────────────────────────────────────

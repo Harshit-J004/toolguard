@@ -1,0 +1,31 @@
+# toolguard/integration_tests/mcp_stress_policy.yaml
+# Ultra-Rigorous 7-Layer Stress Configuration
+
+defaults:
+  risk_tier: 1
+  rate_limit: 100
+  scan_injection: true
+
+tools:
+  read_kernel_log:
+    blocked: true                # Layer 1: Policy Enforcement
+  
+  restart_server:
+    risk_tier: 2                 # Layer 2: Risk Tier Gating
+  
+  search:
+    scan_injection: true         # Layer 3: Injection Scanning
+  
+  get_stats:
+    rate_limit: 2                # Layer 4: Rate Limiting (threshold: 2 calls/min)
+  
+  send_email:
+    constraints:                 # Layer 5: Semantic Policy
+      - field: "recipient"
+        type: "regex_deny"
+        patterns: [".*@evil\\.com$"]
+        reason: "Recipient domain is on the global blocklist (evil.com)"
+  
+  update_profile:
+    risk_tier: 1
+    # Layer 6 Drift is handled via the separate Baseline Fingerprint in SQLite

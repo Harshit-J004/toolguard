@@ -42,6 +42,7 @@ from toolguard.cli.commands.badge_cmd import badge_cmd
 from toolguard.cli.commands.replay_cmd import replay_cmd
 from toolguard.cli.commands.proxy_cmd import proxy_cmd
 from toolguard.cli.commands.dashboard_cmd import dashboard
+from toolguard.cli.commands.drift_cmd import drift_cmd
 
 cli.add_command(init_cmd, "init")
 cli.add_command(run_cmd, "run")
@@ -53,6 +54,7 @@ cli.add_command(badge_cmd, "badge")
 cli.add_command(replay_cmd, "replay")
 cli.add_command(proxy_cmd, "proxy")
 cli.add_command(dashboard, "dashboard")
+cli.add_command(drift_cmd, "drift")
 
 
 # ── Standalone version command ───────────────────────────

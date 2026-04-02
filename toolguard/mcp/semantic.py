@@ -21,6 +21,9 @@ from __future__ import annotations
 
 import fnmatch
 import re
+import os
+import urllib.parse
+import base64
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -54,28 +57,33 @@ class SessionContext:
     field_counts: dict[str, dict[str, int]] = field(default_factory=dict)
     
     def record_call(self, tool_name: str, arguments: dict[str, Any]) -> None:
-        """Record a tool call for session-aware constraint checks."""
-        self.tool_history.append(tool_name)
+        """Record a tool call for session-aware constraint checks.
+        
+        Hardened: Normalizes tool name to prevent session-tracking evasion.
+        """
+        name = tool_name.strip().casefold()
+        self.tool_history.append(name)
         
         # Track per-field value counts for scope limits
-        if tool_name not in self.field_counts:
-            self.field_counts[tool_name] = {}
+        if name not in self.field_counts:
+            self.field_counts[name] = {}
         for field_name, value in arguments.items():
             key = f"{field_name}:{value}"
-            self.field_counts[tool_name][key] = (
-                self.field_counts[tool_name].get(key, 0) + 1
+            self.field_counts[name][key] = (
+                self.field_counts[name].get(key, 0) + 1
             )
     
     def was_called(self, tool_name: str) -> bool:
         """Check if a tool has been called in this session."""
-        return tool_name in self.tool_history
+        return tool_name.strip().casefold() in self.tool_history
     
     def get_unique_value_count(self, tool_name: str, field_name: str) -> int:
         """Count unique values used for a field across calls to a tool."""
-        if tool_name not in self.field_counts:
+        name = tool_name.strip().casefold()
+        if name not in self.field_counts:
             return 0
         return sum(
-            1 for k in self.field_counts[tool_name]
+            1 for k in self.field_counts[name]
             if k.startswith(f"{field_name}:")
         )
 
@@ -83,6 +91,23 @@ class SessionContext:
 # ──────────────────────────────────────────────
 #  Tier 1: Rule-Based Constraints
 # ──────────────────────────────────────────────
+
+def _unroll_obfuscation(val: str) -> list[str]:
+    """Recursively peels back URL and Base64 encoding to detect hidden payloads."""
+    results = [val]
+    try:
+        # 1. URL/Hex Decode
+        unq = urllib.parse.unquote(val)
+        if unq != val: results.append(unq)
+        
+        # 2. Base64 Decode
+        # Strictly matches b64 architecture (e.g. L2V0Yy9wYXNzd2Q=)
+        if len(val) >= 4 and len(val) % 4 == 0 and re.match(r'^[a-zA-Z0-9+/]+={0,2}$', val):
+            b = base64.b64decode(val).decode('utf-8')
+            if b != val: results.append(b)
+    except Exception:
+        pass
+    return results
 
 def _check_path_deny(arguments: dict[str, Any], constraint: dict) -> SemanticResult | None:
     """Deny access if any argument value matches a forbidden file path pattern."""
@@ -103,17 +128,29 @@ def _check_path_deny(arguments: dict[str, Any], constraint: dict) -> SemanticRes
     for field_name, value in values_to_check.items():
         if not isinstance(value, str):
             continue
-        # Normalize path separators for cross-platform matching
-        normalized = value.replace("\\", "/")
-        for pattern in deny_patterns:
-            if fnmatch.fnmatch(normalized, pattern):
-                return SemanticResult(
-                    allowed=False,
-                    constraint_type="path_deny",
-                    reason=reason,
-                    field_name=field_name,
-                    field_value=value,
-                )
+            
+        for unrolled_val in _unroll_obfuscation(value):
+            # Absolute Zero Normalization:
+            # 1. Normalize separators and collapse traversal aliases (e.g., //, ./, ../)
+            # 2. Forensic Flattening: Force collapse of redundant leading slashes (//etc/passwd -> /etc/passwd)
+            # 3. Casefold for protocol integrity
+            p = unrolled_val.replace("\\", "/")
+            p = "/" + p.lstrip("/")
+            normalized = os.path.normpath(p).replace("\\", "/").casefold()
+            
+            for pattern in deny_patterns:
+                pat = pattern.replace("\\", "/")
+                pat = "/" + pat.lstrip("/")
+                pattern_norm = os.path.normpath(pat).replace("\\", "/").casefold()
+                
+                if fnmatch.fnmatch(normalized, pattern_norm):
+                    return SemanticResult(
+                        allowed=False,
+                        constraint_type="path_deny",
+                        reason=f"{reason} (Detected via Obfuscation Unrolling)" if unrolled_val != value else reason,
+                        field_name=field_name,
+                        field_value=value,
+                    )
     return None
 
 
@@ -138,12 +175,34 @@ def _check_path_allow(arguments: dict[str, Any], constraint: dict) -> SemanticRe
     for field_name, value in values_to_check.items():
         if not isinstance(value, str):
             continue
-        normalized = value.replace("\\", "/")
-        if not any(fnmatch.fnmatch(normalized, p) for p in allow_patterns):
+            
+        # Ensure AT LEAST ONE unrolled payload strictly matches the safelist
+        is_safe = False
+        reason_trace = reason
+        
+        for unrolled_val in _unroll_obfuscation(value):
+            p = unrolled_val.replace("\\", "/")
+            p = "/" + p.lstrip("/")
+            normalized = os.path.normpath(p).replace("\\", "/").casefold()
+            
+            normalized_patterns = []
+            for pat in allow_patterns:
+                pat_clean = pat.replace("\\", "/")
+                pat_clean = "/" + pat_clean.lstrip("/")
+                normalized_patterns.append(os.path.normpath(pat_clean).replace("\\", "/").casefold())
+            
+            if any(fnmatch.fnmatch(normalized, p) for p in normalized_patterns):
+                is_safe = True
+                break
+            else:
+                if unrolled_val != value:
+                    reason_trace = f"{reason} (Failed on Base64/Obfuscated Payload)"
+        
+        if not is_safe:
             return SemanticResult(
                 allowed=False,
                 constraint_type="path_allow",
-                reason=reason,
+                reason=reason_trace,
                 field_name=field_name,
                 field_value=value,
             )
@@ -316,7 +375,7 @@ class SemanticEngine:
     
     def has_constraints(self, tool_name: str) -> bool:
         """Check if a tool has any semantic constraints defined."""
-        return tool_name in self._tool_constraints
+        return tool_name.strip().casefold() in self._tool_constraints
     
     def evaluate(
         self,
@@ -334,7 +393,8 @@ class SemanticEngine:
         Returns:
             SemanticResult — allowed=True if all constraints pass.
         """
-        constraints = self._tool_constraints.get(tool_name, [])
+        name = tool_name.strip().casefold()
+        constraints = self._tool_constraints.get(name, [])
         
         if not constraints:
             return SemanticResult(allowed=True)
@@ -378,6 +438,7 @@ class SemanticEngine:
         for tool_name, tool_data in data.get("tools", {}).items():
             constraints = tool_data.get("constraints", [])
             if constraints:
-                tool_constraints[tool_name] = constraints
+                name = tool_name.strip().casefold()
+                tool_constraints[name] = constraints
         
         return cls(tool_constraints=tool_constraints)

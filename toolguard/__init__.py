@@ -14,8 +14,8 @@ Usage:
     report = test_chain([get_weather, process, alert], assert_reliability=0.95)
 """
 
-__version__ = "5.1.2"
-__author__ = "ToolGuard Contributors"
+__version__ = "6.0.0"
+__author__ = "Harshit-J004"
 
 import typing
 
@@ -26,6 +26,7 @@ from toolguard.core.errors import (
     CircuitBreakerOpenError,
     CompatibilityError,
     SchemaValidationError,
+    SchemaDriftError,
     ToolGuardError,
     ToolTimeoutError,
 )
@@ -40,6 +41,16 @@ from toolguard.core.scoring import (
 )
 from toolguard.core.validator import GuardedTool, create_tool
 from toolguard.core.tracer import TraceTracker, TraceLog, ToolGuardTraceMismatchError
+from toolguard.core.drift import (
+    SchemaFingerprint,
+    DriftReport,
+    FieldDrift,
+    infer_schema,
+    create_fingerprint,
+    create_fingerprint_from_model,
+    detect_drift,
+)
+from toolguard.core.drift_store import FingerprintStore
 from toolguard.storage import ResultStore
 from toolguard.alerts import configure_alerts
 
@@ -76,6 +87,16 @@ __all__ = [
     "CircuitBreakerOpenError",
     "CompatibilityError",
     "ToolGuardTraceMismatchError",
+    # Drift Detection (v6.0)
+    "SchemaDriftError",
+    "SchemaFingerprint",
+    "DriftReport",
+    "FieldDrift",
+    "FingerprintStore",
+    "infer_schema",
+    "create_fingerprint",
+    "create_fingerprint_from_model",
+    "detect_drift",
     "quick_check",
 ]
 
