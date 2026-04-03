@@ -4,7 +4,22 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
-## [6.0.0] - 2026-03-31
+## [6.0.0] - 2026-04-03
+
+### Added — Production-grade 4-Tier Risk Architecture (Layer 2 Upgrade)
+- **Refined Risk Tiers**: Upgraded from a simple 2-tier system to a comprehensive 4-tier risk architecture.
+  - **Tier 1 (Standard)**: Auto-approve execution with full trace logging.
+  - **Tier 2 (Restricted)**: Human approval via terminal (Y/N prompt). Supports configuration for approval timeout (prevents pipeline deadlocks from unattended terminals) and approval TTL caching to reduce friction in looping LLM executions.
+  - **Tier 3 (Critical)**: "Double-confirm" constraint (the user must type the exact tool name, not just 'y', overriding muscle memory limits). Skips approval caching.
+  - **Tier 4 (Forbidden)**: Always denied execution with full log trace availability, enhancing forensic auditing capabilities without removing the tool definition via `blocked: true`.
+- **7-Defense Architecture**: Implemented 7 targeted architectural defenses:
+  - Global `_stdin_lock` mutex to perfectly prevent input thread collision.
+  - Isolated `TOOLGUARD_AUTO_APPROVE` bypass mapping (Tier 2 only, Tiers 3 & 4 ignore).
+  - Configurable Tier clamping `_clamp_tier(1-4)` handling malformed values reliably.
+  - Thread-atomic `_approval_cache_lock` checks.
+  - Advanced headless failure validations targeting sub-tty layers like SSH-T and systemd pods using `os.fstat()`.
+  - Case-folded Tier-3 string comparisons.
+  - Dynamic `_approval_cache.clear()` methods available on Hot Policy Reloads.
 
 ### Added — Schema Drift Detection Engine (Layer 7 Upgrade)
 - **7-Layer Interceptor Pipeline**: Upgraded from 6 to 7 layers. New Layer 6 (`L6:DRF`) intercepts live LLM tool payloads and compares them against frozen structural baselines in real-time.

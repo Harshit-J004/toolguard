@@ -3,9 +3,15 @@ toolguard.mcp.policy
 ~~~~~~~~~~~~~~~~~~~~
 YAML-based security policy engine for MCP tool calls.
 
-Defines per-tool rules: risk tiers, rate limits, blocked tools,
+Defines per-tool rules: risk tiers (1-4), rate limits, blocked tools,
 and injection scanning toggles. Supports a `defaults` block
 that applies to any tool not explicitly configured.
+
+Risk Tier Definitions:
+  Tier 1 (Standard):   Auto-approve. Full trace logging.
+  Tier 2 (Restricted): Human approval required. Configurable timeout + approval caching.
+  Tier 3 (Critical):   Human double-confirm (must type tool name). No caching.
+  Tier 4 (Forbidden):  Always denied. No override possible.
 """
 
 from __future__ import annotations
@@ -15,14 +21,33 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+# Valid risk tier range
+_MIN_TIER = 1
+_MAX_TIER = 4
+
+
+def _clamp_tier(value: int) -> int:
+    """Clamp risk_tier to valid range [1, 4]. Unknown high = Forbidden (fail-safe)."""
+    return max(_MIN_TIER, min(_MAX_TIER, value))
+
+
 @dataclass
 class ToolPolicy:
-    """Security policy for a single MCP tool."""
+    """Security policy for a single MCP tool.
+
+    Risk Tiers:
+        1 = Standard   (auto-approve)
+        2 = Restricted  (human approval, configurable timeout + caching)
+        3 = Critical    (human double-confirm, must type tool name)
+        4 = Forbidden   (always deny, no override)
+    """
     risk_tier: int = 1
     rate_limit: int = 50          # calls per minute
     blocked: bool = False
     scan_injection: bool = True
     constraints: list[dict] = field(default_factory=list)  # Semantic constraints
+    approval_timeout: int = 30    # Seconds before auto-deny (Tier 2+). 0 = wait forever.
+    approval_ttl: int = 0         # Seconds to cache approval (Tier 2 only). 0 = ask every time.
 
 
 @dataclass
@@ -82,19 +107,28 @@ class MCPPolicy:
               risk_tier: 1
               rate_limit: 50
               scan_injection: true
+              approval_timeout: 30
+              approval_ttl: 0
             tools:
               delete_file:
                 risk_tier: 2
                 rate_limit: 5
+                approval_ttl: 300
               execute_code:
                 blocked: true
+              shutdown_server:
+                risk_tier: 3
+              nuclear_launch:
+                risk_tier: 4
         """
         defaults_data = data.get("defaults", {})
         defaults = ToolPolicy(
-            risk_tier=defaults_data.get("risk_tier", 1),
+            risk_tier=_clamp_tier(defaults_data.get("risk_tier", 1)),
             rate_limit=defaults_data.get("rate_limit", 50),
             blocked=defaults_data.get("blocked", False),
             scan_injection=defaults_data.get("scan_injection", True),
+            approval_timeout=defaults_data.get("approval_timeout", 30),
+            approval_ttl=defaults_data.get("approval_ttl", 0),
         )
 
         tools = {}
@@ -102,11 +136,13 @@ class MCPPolicy:
             # Hardened: Store normalized names to prevent protocol spoofing
             name = tool_name.strip().casefold()
             tools[name] = ToolPolicy(
-                risk_tier=tool_data.get("risk_tier", defaults.risk_tier),
+                risk_tier=_clamp_tier(tool_data.get("risk_tier", defaults.risk_tier)),
                 rate_limit=tool_data.get("rate_limit", defaults.rate_limit),
                 blocked=tool_data.get("blocked", defaults.blocked),
                 scan_injection=tool_data.get("scan_injection", defaults.scan_injection),
                 constraints=tool_data.get("constraints", []),
+                approval_timeout=tool_data.get("approval_timeout", defaults.approval_timeout),
+                approval_ttl=tool_data.get("approval_ttl", defaults.approval_ttl),
             )
 
         return cls(tools=tools, defaults=defaults)

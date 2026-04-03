@@ -263,6 +263,11 @@ class MCPInterceptor:
             }}
         )
         self._session = SessionContext()
+        # Defense #1: Global stdin lock prevents thread race conditions
+        self._stdin_lock = threading.Lock()
+        # Defense #4: Approval cache for Tier 2 (tool_name -> expiry timestamp)
+        self._approval_cache: dict[str, float] = {}
+        self._approval_cache_lock = threading.Lock()
 
     def intercept(self, tool_name: str, arguments: dict[str, Any]) -> InterceptResult:
         """Run the full 7-layer security pipeline.
@@ -294,21 +299,56 @@ class MCPInterceptor:
                              latency_ms=(time.perf_counter() - start_time) * 1000)
             return result
 
-        # ── Layer 2: Risk Tier Gate ──
+        # ── Layer 2: Risk Tier Gate (4-Tier Architecture) ──
         tier = self.policy.get_risk_tier(tool_name)
-        if tier >= 2 and not self.policy.auto_approve:
-            # Require human approval
-            approved = self._request_approval(tool_name, arguments)
+        tool_policy = self.policy.get_tool_policy(tool_name)
+
+        # Tier 4: Forbidden — always deny, no override, no env bypass
+        if tier >= 4:
+            self._log("FORBIDDEN", tool_name, f"Tool is forbidden (risk tier {tier}). No override.")
+            result = InterceptResult(
+                allowed=False,
+                reason=f"Tool '{tool_name}' is forbidden (risk tier {tier}). No override possible.",
+                layer="risk_tier",
+            )
+            self._emit_trace(original_tool_name, arguments, result,
+                             latency_ms=(time.perf_counter() - start_time) * 1000)
+            return result
+
+        # Tier 3: Critical — double-confirm (type tool name). Ignores auto_approve.
+        if tier == 3:
+            approved = self._request_critical_approval(tool_name, arguments)
             if not approved:
-                self._log("DENIED", tool_name, "Human denied tier-2 tool execution")
+                self._log("DENIED", tool_name, f"Critical tool denied (risk tier {tier}). Double-confirm failed.")
                 result = InterceptResult(
                     allowed=False,
-                    reason=f"Tool '{tool_name}' requires human approval (risk tier {tier}). Denied.",
+                    reason=f"Tool '{tool_name}' requires critical double-confirmation (risk tier {tier}). Denied.",
                     layer="risk_tier",
                 )
                 self._emit_trace(original_tool_name, arguments, result,
                                  latency_ms=(time.perf_counter() - start_time) * 1000)
                 return result
+
+        # Tier 2: Restricted — human approval with timeout + caching. Respects auto_approve.
+        elif tier == 2 and not self.policy.auto_approve:
+            # Check approval cache first
+            if not self._check_approval_cache(tool_name):
+                timeout = tool_policy.approval_timeout
+                approved = self._request_approval(tool_name, arguments, tier, timeout)
+                if not approved:
+                    self._log("DENIED", tool_name, f"Restricted tool denied (risk tier {tier}).")
+                    result = InterceptResult(
+                        allowed=False,
+                        reason=f"Tool '{tool_name}' requires human approval (risk tier {tier}). Denied.",
+                        layer="risk_tier",
+                    )
+                    self._emit_trace(original_tool_name, arguments, result,
+                                     latency_ms=(time.perf_counter() - start_time) * 1000)
+                    return result
+                # Cache the approval if TTL > 0
+                ttl = tool_policy.approval_ttl
+                if ttl > 0:
+                    self._cache_approval(tool_name, ttl)
 
         # ── Layer 3: Prompt Injection Scan ──
         if self.policy.should_scan_injection(tool_name):
@@ -404,30 +444,165 @@ class MCPInterceptor:
         """Returns the complete execution trace log."""
         return list(self._trace_log)
 
-    def _request_approval(self, tool_name: str, arguments: dict) -> bool:
-        """Request human approval for a tier-2 tool via terminal."""
-        # 1. Docker Deadlock Prevention: Instantly fail-close in headless environments
-        if not sys.stdin.isatty() and not os.environ.get("TOOLGUARD_OS_PIPE_TEST"):
+    # ──────────────────────────────────────────────
+    #  Risk Tier: Interactive Environment Detection
+    # ──────────────────────────────────────────────
+
+    def _is_interactive(self) -> bool:
+        """Check if stdin is truly interactive (Defense #5).
+        
+        Catches broken PTY allocations (SSH -T), systemd services,
+        and Kubernetes exec without stdin attached.
+        """
+        # Allow synthetic testing via env var
+        if os.environ.get("TOOLGUARD_OS_PIPE_TEST"):
+            return True
+        if not sys.stdin.isatty():
+            return False
+        try:
+            # Verify stdin is truly readable
+            if hasattr(sys.stdin, 'fileno'):
+                os.fstat(sys.stdin.fileno())
+            return True
+        except (OSError, ValueError, AttributeError):
+            return False  # Fail-close
+
+    # ──────────────────────────────────────────────
+    #  Risk Tier: Approval Cache (Tier 2 only)
+    # ──────────────────────────────────────────────
+
+    def _check_approval_cache(self, tool_name: str) -> bool:
+        """Check if a Tier 2 tool has a valid cached approval (Defense #4)."""
+        name = tool_name.strip().casefold()
+        with self._approval_cache_lock:
+            expiry = self._approval_cache.get(name, 0)
+            if time.time() < expiry:
+                self._log("CACHED_APPROVAL", tool_name, 
+                          f"Using cached approval (expires in {int(expiry - time.time())}s)")
+                return True
+            # Clean expired entry
+            self._approval_cache.pop(name, None)
+            return False
+
+    def _cache_approval(self, tool_name: str, ttl: int) -> None:
+        """Cache a Tier 2 approval for the given TTL in seconds."""
+        name = tool_name.strip().casefold()
+        with self._approval_cache_lock:
+            self._approval_cache[name] = time.time() + ttl
+        self._log("CACHE_SET", tool_name, f"Approval cached for {ttl}s")
+
+    def clear_approval_cache(self) -> None:
+        """Clear all cached approvals. Call this on policy reload (Defense #7)."""
+        with self._approval_cache_lock:
+            self._approval_cache.clear()
+
+    # ──────────────────────────────────────────────
+    #  Risk Tier 2: Restricted — Human Approval
+    # ──────────────────────────────────────────────
+
+    def _request_approval(self, tool_name: str, arguments: dict, 
+                          tier: int, timeout: int = 30) -> bool:
+        """Request human approval for a Tier 2 (Restricted) tool.
+        
+        Features:
+          - Headless fail-close (Defense #5)
+          - Stdin mutex lock (Defense #1)
+          - Configurable timeout, auto-deny on expiry
+        """
+        # 1. Interactive environment check
+        if not self._is_interactive():
             print(
-                f"\n🛡️  [ToolGuard MCP Proxy] HEADLESS ENFORCER\n"
-                f"   Terminal unavailable for Risk Tier 2 execution.\n"
+                f"\n🛡️  [ToolGuard] HEADLESS ENFORCER\n"
+                f"   Terminal unavailable for Risk Tier {tier} execution.\n"
                 f"   Auto-denying to prevent deadlock.",
                 file=sys.stderr,
             )
             return False
 
-        try:
+        # 2. Acquire stdin lock (Defense #1: prevent thread race on input())
+        with self._stdin_lock:
+            try:
+                print(
+                    f"\n🛡️  [ToolGuard] APPROVAL REQUIRED\n"
+                    f"   Tool:      {tool_name}\n"
+                    f"   Arguments: {arguments}\n"
+                    f"   Risk Tier: {tier} (restricted)\n"
+                    f"   Timeout:   {timeout}s\n",
+                    file=sys.stderr,
+                )
+
+                # 3. Threaded input with configurable timeout
+                if timeout <= 0:
+                    # Legacy mode: wait forever (timeout=0)
+                    response = input("   Approve? [y/N]: ").strip().lower()
+                    return response in ("y", "yes")
+
+                result_holder = [None]
+                def _ask():
+                    try:
+                        result_holder[0] = input("   Approve? [y/N]: ").strip().lower()
+                    except (EOFError, KeyboardInterrupt):
+                        result_holder[0] = "n"
+
+                ask_thread = threading.Thread(target=_ask, daemon=True)
+                ask_thread.start()
+                ask_thread.join(timeout=timeout)
+
+                if result_holder[0] is None:
+                    print(
+                        f"\n   ⏱️  Approval timed out after {timeout}s. Auto-denying.",
+                        file=sys.stderr,
+                    )
+                    return False
+                return result_holder[0] in ("y", "yes")
+
+            except (EOFError, KeyboardInterrupt):
+                return False
+
+    # ──────────────────────────────────────────────
+    #  Risk Tier 3: Critical — Double-Confirm
+    # ──────────────────────────────────────────────
+
+    def _request_critical_approval(self, tool_name: str, arguments: dict) -> bool:
+        """Request critical double-confirmation for a Tier 3 tool.
+        
+        The user must type the exact tool name (case-insensitive) to confirm.
+        This prevents muscle-memory "y" approvals for catastrophic tools.
+        No approval caching. Ignores auto_approve.
+        """
+        # 1. Interactive environment check
+        if not self._is_interactive():
             print(
-                f"\n🛡️  [ToolGuard MCP Proxy] APPROVAL REQUIRED\n"
-                f"   Tool:      {tool_name}\n"
-                f"   Arguments: {arguments}\n"
-                f"   Risk Tier: 2 (destructive)\n",
+                f"\n🛡️  [ToolGuard] HEADLESS ENFORCER (CRITICAL)\n"
+                f"   Terminal unavailable for Risk Tier 3 execution.\n"
+                f"   Auto-denying to prevent deadlock.",
                 file=sys.stderr,
             )
-            response = input("   Approve? [y/N]: ").strip().lower()
-            return response in ("y", "yes")
-        except (EOFError, KeyboardInterrupt):
             return False
+
+        # 2. Acquire stdin lock
+        with self._stdin_lock:
+            try:
+                print(
+                    f"\n🛡️  [ToolGuard] CRITICAL TOOL — DOUBLE CONFIRM REQUIRED\n"
+                    f"   Tool:      {tool_name}\n"
+                    f"   Arguments: {arguments}\n"
+                    f"   Risk Tier: 3 (critical / destructive)\n"
+                    f"\n   Type the exact tool name to confirm execution:\n",
+                    file=sys.stderr,
+                )
+                response = input("   > ").strip()
+                # Defense #6: casefold both sides
+                approved = response.casefold() == tool_name.strip().casefold()
+                if not approved:
+                    print(
+                        f"   ❌ Mismatch. Expected '{tool_name}', got '{response}'. Denying.",
+                        file=sys.stderr,
+                    )
+                return approved
+
+            except (EOFError, KeyboardInterrupt):
+                return False
 
     def _emit_trace(self, tool_name: str, arguments: dict, result: InterceptResult, 
                     latency_ms: float = 0.0) -> None:

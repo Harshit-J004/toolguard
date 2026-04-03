@@ -142,7 +142,12 @@ ToolGuard features an impenetrable execution-layer security framework protecting
 With the v6.0.0 Update, we are moving beyond simple validation. We are introducing a 7-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
 
 1. **L1 — Policy**: An immutable “Allow/Deny” list with absolute casing normalization. Stop dangerous tools from ever being contacted.
-2. **L2 — Risk-Tier (Human-in-the-Loop Safe)**: Marks destructive tools (like `shutdown_server` or `delete_all`). These calls are frozen until a human approves via a zero-latency terminal prompt, running in an isolated worker so the main event loop stays alive. **If deployed to a headless Docker/AWS environment without a terminal, it automatically detects the state and Fail-Closes instantly to prevent infinite thread deadlocks.**
+2. **L2 — Risk-Tier (Human-in-the-Loop Safe)**: Upgraded to a 4-Tier production-grade risk architecture. 
+   - `Tier 1`: Standard tools (auto-approve).
+   - `Tier 2`: Restricted tools (requires human Y/N approval). Features a configurable auto-deny **timeout** mapping to prevent hanging unattended terminals, and **TTL Approval Caching** for high-volume looping LLM executions.
+   - `Tier 3`: Critical tools (requires the human to type the exact tool name to double-confirm).
+   - `Tier 4`: Forbidden tools (always denied without override).
+   **If deployed to a headless Docker/AWS environment without a terminal, it automatically detects the state via sub-tty validation and Fail-Closes instantly to prevent infinite thread deadlocks.**
 3. **L3 — Deep-Memory Injection Defense**: Our most advanced scanner yet. A recursive DFS parser that natively decodes binary streams (`bytes`/`bytearray`) to detect hidden prompt injections that bypass surface-level text filters, **and utilizes strict depth limits to prevent Stack-Buster DoS attacks.**
 4. **L4 — Rate-Limit**: A sliding-window cap to prevent LLM loops from burning your API budget. **Now built with strictly thread-safe, atomic JSON disk-persistence to survive server "Restart Amnesia."**
 5. **L5 — Semantic Validation**: catches `DROP TABLE` or path traversal before execution. **Now structurally powered by an Obfuscation Unroller that automatically intercepts URL-encoded and Base64-masked payloads (`L2V0Yy9wYXNzd2Q=`) prior to canonical evaluation.**
