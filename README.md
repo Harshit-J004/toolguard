@@ -4,7 +4,7 @@
 
 **The "Cloudflare for AI Agents".** 7-layer security interceptor, real-time observability dashboard, and automated reliability testing for MCP and AI tool chains.
 
-![ToolGuard v6.0.0 Dashboard](docs/images/dashboard_v6_hardened.png)
+![ToolGuard v6.1.0 Enterprise Dashboard](docs/images/dashboard_v6_1_enterprise.png)
 
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
