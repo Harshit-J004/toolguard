@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  toolguard:
+    build: .
+    container_name: toolguard_proxy
+    ports:
+      - "8080:8080"
+    environment:
+      # Optional: set an API key to secure the proxy
+      - TOOLGUARD_API_KEY=tg_live_super_secret_key
+      # Connect to the Redis container for distributed state tracking
+      - TOOLGUARD_STORAGE_URL=redis://redis:6379/0
+    volumes:
+      # Mount your local security YAML policy
+      - ./examples/weather_chain/chain_config.yaml:/app/security.yaml
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: toolguard_redis
+    ports:
+      - "6379:6379"

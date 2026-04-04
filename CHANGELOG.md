@@ -4,6 +4,34 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
+## [6.1.0] - 2026-04-03
+
+### Added — Enterprise HTTP Proxy Sidecar (Cross-Language Support)
+- **Asymmetric Language Architecture**: ToolGuard can now be used by **TypeScript, Node.js, Go, Rust, Java**, and any other language ecosystem via a standalone HTTP Proxy.
+- **REST Intercept Endpoint**: `POST /v1/intercept` allows any agent to execute the full 7-Layer security pipeline natively via JSON. Trace events bridge perfectly into the Obsidian Dashboard.
+- **API Key Security**: Secure the proxy sidecar against unauthenticated internal network requests using standard `Bearer <token>` middleware. Includes configuration via `--api-key` or `TOOLGUARD_API_KEY` env var.
+- **Docker & Kubernetes Integration**: Official `Dockerfile` and `docker-compose.yml` added. Run the proxy sidecar instantly with `docker-compose up -d`, completely abstracting Python away from Java/TypeScript DevOps teams.
+- **New CLI Command**: `toolguard serve --policy security.yaml --port 8080` launches the ASGI server using FastAPI/Uvicorn.
+- **Kubernetes Readiness**: Added `GET /v1/health` endpoint for native Kubernetes liveness probes.
+
+### Added — Distributed State (Cluster-Safe ToolGuard)
+- **Unified `StorageBackend` Interface**: Decoupled all ToolGuard memory (Rate Limits, Approval Cache, Schema Fingerprints, and Execution Grants) from local files.
+- **Redis Enterprise Backend**: Implemented `RedisStorageBackend` enabling atomic `INCR`, `SETEX`, and `HSET` operations. Prevents rate-limit leakage across 50-pod Kubernetes swarms.
+- **Zero-Config local Fallback**: Implemented `LocalStorageBackend` maintaining SQLite/JSON behavior for local development.
+
+### Added — Asynchronous Webhook Approvals (Headless Agent Resumption)
+- **Headless-First Approvals**: When a Risk Tier 2 or 3 tool fires in a cloud server without a terminal (`sys.stdin.isatty() == False`), ToolGuard now pauses execution instead of permanently "Failing Closed".
+- **4 Native Webhook Providers**: 
+  - **Discord**: Link-button embeds for open-source communities.
+  - **Slack**: Block Kit interactive buttons for startups.
+  - **Microsoft Teams**: Adaptive Cards for Fortune 500 enterprises.
+  - **Generic**: Standard JSON payloads for Zapier/Make.com/n8n.
+- **Cryptographic Execution Grants**: Generates an ephemeral `grant_id` UUID stored in Redis with `PENDING` state.
+- **FastAPI Approval Server**: Pre-built HTTP endpoints (`/toolguard/approve` & `/toolguard/deny`) rendered with beautiful dark-mode HTML confirmation pages.
+- **Polling Resumption Loop**: The interceptor safely waits up to the `approval_timeout`, polling the Redis cluster for a manager's remote authorization before unblocking the LLM chain.
+
+---
+
 ## [6.0.0] - 2026-04-03
 
 ### Added — Production-grade 4-Tier Risk Architecture (Layer 2 Upgrade)

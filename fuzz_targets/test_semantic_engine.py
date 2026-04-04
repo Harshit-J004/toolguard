@@ -195,7 +195,7 @@ def run_tests():
     check("Allow repeat of existing user_id (not a new unique value)", r.allowed, r.reason)
 
     # ──────────────────────────────────────────
-    print("\n🔌 INTEGRATION: Full 6-Layer Interceptor Pipeline")
+    print("\n🔌 INTEGRATION: Full 7-Layer Interceptor Pipeline")
     print("─" * 50)
 
     # Build a full MCPPolicy with semantic constraints

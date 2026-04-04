@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolGuard | Elite Proxy Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/app.js" defer></script>
+</head>
+<body>
+    <div id="crt-overlay"></div>
+    <div class="app-container">
+        
+        <!-- Elite Header -->
+        <header class="elite-header">
+            <div class="logo-block">
+                <h1>ToolGuard</h1>
+                <div class="cmd-line">
+                    <span class="cmd-prefix">$</span><span class="cmd-text">toolguard monitor --live --v{{VERSION}} --enterprise --obsidian</span>
+                </div>
+            </div>
+            
+            <div class="system-status">
+                <div class="status-line">
+                    <span class="status-tag tag-ok">[ OK ]</span> Starting ToolGuard Security Mesh...
+                </div>
+                <div class="status-line">
+                    <span class="status-tag tag-ok">[ OK ]</span> 7-Layer Interceptor active
+                </div>
+                <div class="status-line">
+                    <span class="status-tag tag-ok">[ OK ]</span> Distributed Cluster Sync (Redis Storage)
+                </div>
+                <div class="status-line" id="connection-line">
+                    <span class="status-tag tag-info">[ INFO ]</span> <span id="connection-status">Universal HTTP Sidecar Active</span>
+                </div>
+            </div>
+
+            <div class="sentinel-hud">
+                <div class="hud-item master-toggle" id="kill-switch">
+                    <span class="led"></span> <span id="kill-switch-text">SECURE</span>
+                </div>
+                <div class="hud-sep">|</div>
+                <div class="hud-item" id="hud-l1"><span class="led"></span> L1:POL</div>
+                <div class="hud-item" id="hud-l2"><span class="led"></span> L2:RSK</div>
+                <div class="hud-item" id="hud-l3"><span class="led"></span> L3:INJ</div>
+                <div class="hud-item" id="hud-l4"><span class="led"></span> L4:RAT</div>
+                <div class="hud-item" id="hud-l5"><span class="led"></span> L5:SEM</div>
+                <div class="hud-item" id="hud-l6"><span class="led"></span> L6:DRF</div>
+                <div class="hud-item" id="hud-l7"><span class="led"></span> L7:TRC</div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Pane: Trace Stream -->
+            <section class="pane stream-pane">
+                <div class="pane-header">
+                    <div class="window-dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <span class="pane-title">~/toolguard/traces</span>
+                </div>
+                <div class="prompt-line">
+                    <span class="cmd-prefix">$</span><span class="cmd-text">tail -f .toolguard/mcp_traces/stream</span>
+                </div>
+                <div id="stream-container" class="scroll-zone">
+                    <!-- Cards injected here via JS -->
+                </div>
+            </section>
+
+            <!-- Right Pane: Inspector -->
+            <section class="pane inspector-pane">
+                <div class="pane-header">
+                    <div class="window-dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <span class="pane-title" id="inspector-title">~/toolguard/inspector</span>
+                </div>
+                <div class="prompt-line">
+                    <span class="cmd-prefix">$</span><span class="cmd-text" id="inspector-command">cat trace_details.json</span>
+                </div>
+                <div id="inspector-content" class="scroll-zone inspector-content">
+                    <div class="empty-state">Select a process trace to inspect...</div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</body>
+</html>
+

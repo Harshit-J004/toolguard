@@ -20,6 +20,7 @@ import os
 import sys
 import time
 import re
+import uuid
 import threading
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -28,7 +29,8 @@ from typing import Any
 from toolguard.mcp.policy import MCPPolicy
 from toolguard.mcp.semantic import SemanticEngine, SessionContext
 from toolguard.core.drift import detect_drift, SchemaFingerprint
-from toolguard.core.drift_store import FingerprintStore
+from toolguard.core.storage import create_storage_backend
+from toolguard.core.webhooks.base import WebhookProvider
 
 
 # ──────────────────────────────────────────────
@@ -250,10 +252,12 @@ class MCPInterceptor:
             ...
     """
 
-    def __init__(self, policy: MCPPolicy, verbose: bool = False):
+    def __init__(self, policy: MCPPolicy, storage_url: str | None = None, 
+                 webhook_provider: WebhookProvider | None = None, verbose: bool = False):
         self.policy = policy
         self.verbose = verbose
-        self._rate_limiter = RateLimiter()
+        self.storage = create_storage_backend(storage_url)
+        self.webhook_provider = webhook_provider
         self._trace_log: list[dict[str, Any]] = []
         self._semantic_engine = SemanticEngine.from_policy_dict(
             {"tools": {
@@ -265,9 +269,6 @@ class MCPInterceptor:
         self._session = SessionContext()
         # Defense #1: Global stdin lock prevents thread race conditions
         self._stdin_lock = threading.Lock()
-        # Defense #4: Approval cache for Tier 2 (tool_name -> expiry timestamp)
-        self._approval_cache: dict[str, float] = {}
-        self._approval_cache_lock = threading.Lock()
 
     def intercept(self, tool_name: str, arguments: dict[str, Any]) -> InterceptResult:
         """Run the full 7-layer security pipeline.
@@ -332,7 +333,7 @@ class MCPInterceptor:
         # Tier 2: Restricted — human approval with timeout + caching. Respects auto_approve.
         elif tier == 2 and not self.policy.auto_approve:
             # Check approval cache first
-            if not self._check_approval_cache(tool_name):
+            if not self.storage.check_approval(tool_name):
                 timeout = tool_policy.approval_timeout
                 approved = self._request_approval(tool_name, arguments, tier, timeout)
                 if not approved:
@@ -348,7 +349,7 @@ class MCPInterceptor:
                 # Cache the approval if TTL > 0
                 ttl = tool_policy.approval_ttl
                 if ttl > 0:
-                    self._cache_approval(tool_name, ttl)
+                    self.storage.cache_approval(tool_name, ttl)
 
         # ── Layer 3: Prompt Injection Scan ──
         if self.policy.should_scan_injection(tool_name):
@@ -373,7 +374,7 @@ class MCPInterceptor:
 
         # ── Layer 4: Rate Limiting ──
         limit = self.policy.get_rate_limit(tool_name)
-        if not self._rate_limiter.check(tool_name, limit):
+        if not self.storage.check_and_increment_rate_limit(tool_name, limit, window=60):
             self._log("RATE_LIMITED", tool_name, f"Exceeded {limit} calls/min")
             result = InterceptResult(
                 allowed=False,
@@ -402,8 +403,7 @@ class MCPInterceptor:
 
         # ── Layer 6: Schema Drift ──
         # Execute the static-typed baseline diffing engine against incoming execution payloads
-        with FingerprintStore() as store:
-            baseline = store.get_latest_fingerprint_for_tool(tool_name)
+        baseline = self.storage.get_fingerprint(tool_name)
             
         if baseline:
 
@@ -471,30 +471,9 @@ class MCPInterceptor:
     #  Risk Tier: Approval Cache (Tier 2 only)
     # ──────────────────────────────────────────────
 
-    def _check_approval_cache(self, tool_name: str) -> bool:
-        """Check if a Tier 2 tool has a valid cached approval (Defense #4)."""
-        name = tool_name.strip().casefold()
-        with self._approval_cache_lock:
-            expiry = self._approval_cache.get(name, 0)
-            if time.time() < expiry:
-                self._log("CACHED_APPROVAL", tool_name, 
-                          f"Using cached approval (expires in {int(expiry - time.time())}s)")
-                return True
-            # Clean expired entry
-            self._approval_cache.pop(name, None)
-            return False
-
-    def _cache_approval(self, tool_name: str, ttl: int) -> None:
-        """Cache a Tier 2 approval for the given TTL in seconds."""
-        name = tool_name.strip().casefold()
-        with self._approval_cache_lock:
-            self._approval_cache[name] = time.time() + ttl
-        self._log("CACHE_SET", tool_name, f"Approval cached for {ttl}s")
-
     def clear_approval_cache(self) -> None:
         """Clear all cached approvals. Call this on policy reload (Defense #7)."""
-        with self._approval_cache_lock:
-            self._approval_cache.clear()
+        self.storage.clear_approval_cache()
 
     # ──────────────────────────────────────────────
     #  Risk Tier 2: Restricted — Human Approval
@@ -511,10 +490,13 @@ class MCPInterceptor:
         """
         # 1. Interactive environment check
         if not self._is_interactive():
+            if self.webhook_provider:
+                return self._request_webhook_approval(tool_name, arguments, tier, timeout)
+                
             print(
                 f"\n🛡️  [ToolGuard] HEADLESS ENFORCER\n"
                 f"   Terminal unavailable for Risk Tier {tier} execution.\n"
-                f"   Auto-denying to prevent deadlock.",
+                f"   No WebhookProvider configured. Auto-denying to prevent deadlock.",
                 file=sys.stderr,
             )
             return False
@@ -559,6 +541,55 @@ class MCPInterceptor:
             except (EOFError, KeyboardInterrupt):
                 return False
 
+    def _request_webhook_approval(self, tool_name: str, arguments: dict, tier: int, timeout: int) -> bool:
+        """Fallback out-of-band approval mechanism for headless environments."""
+        grant_id = str(uuid.uuid4())
+        
+        # Enforce a massive timeout if they set 0, because we can't sleep forever without blocking the pod.
+        # But for MVP, max is 15 minutes (900s).
+        actual_timeout = timeout if timeout > 0 else 900
+        
+        # Register the pending grant
+        payload_str = json.dumps(arguments, default=str)
+        self.storage.create_execution_grant(grant_id, payload_str, expires_in=actual_timeout)
+        
+        self._log("WEBHOOK_SENT", tool_name, f"Requesting remote approval. Grant ID: {grant_id}")
+        
+        # Fire the webhook
+        sent = self.webhook_provider.send_approval_request(tool_name, arguments, grant_id, actual_timeout)
+        if not sent:
+            self._log("WEBHOOK_FAILED", tool_name, "Failed to deliver webhook. Auto-denying.")
+            self.storage.resolve_execution_grant(grant_id, "DENIED")
+            return False
+            
+        print(
+            f"\n🛡️  [ToolGuard] REMOTE APPROVAL PENDING\n"
+            f"   Tool:      {tool_name}\n"
+            f"   Grant ID:  {grant_id}\n"
+            f"   Sleeping for up to {actual_timeout}s...",
+            file=sys.stderr,
+        )
+
+        # Polling Loop
+        start = time.time()
+        while time.time() - start < actual_timeout:
+            status = self.storage.check_grant_status(grant_id)
+            
+            if status == "APPROVED":
+                self._log("REMOTE_APPROVED", tool_name, f"Grant {grant_id} approved remotely.")
+                return True
+            elif status == "DENIED":
+                self._log("REMOTE_DENIED", tool_name, f"Grant {grant_id} denied remotely.")
+                return False
+            elif status is None:
+                self._log("GRANT_EXPIRED", tool_name, f"Grant {grant_id} expired during polling.")
+                return False
+                
+            time.sleep(2)  # Active polling
+            
+        self._log("REMOTE_TIMEOUT", tool_name, f"No remote response mapped to {grant_id} within timeout.")
+        return False
+
     # ──────────────────────────────────────────────
     #  Risk Tier 3: Critical — Double-Confirm
     # ──────────────────────────────────────────────
@@ -572,10 +603,13 @@ class MCPInterceptor:
         """
         # 1. Interactive environment check
         if not self._is_interactive():
+            if self.webhook_provider:
+                return self._request_webhook_approval(tool_name, arguments, 3, 900)
+                
             print(
                 f"\n🛡️  [ToolGuard] HEADLESS ENFORCER (CRITICAL)\n"
                 f"   Terminal unavailable for Risk Tier 3 execution.\n"
-                f"   Auto-denying to prevent deadlock.",
+                f"   No WebhookProvider configured. Auto-denying to prevent deadlock.",
                 file=sys.stderr,
             )
             return False
@@ -616,6 +650,13 @@ class MCPInterceptor:
             filename = f"trace_{timestamp_ms}_{node_id}.json"
             trace_path = trace_dir / filename
             
+            # Detect storage engine for enterprise dashboard context
+            storage_type = type(self.storage).__name__
+            if "Redis" in storage_type:
+                storage_mode = "redis"
+            else:
+                storage_mode = "local"
+
             trace_data = {
                 "tool": tool_name.strip().casefold(),
                 "raw_tool": tool_name,
@@ -625,6 +666,8 @@ class MCPInterceptor:
                 "decision": "ALLOWED" if result.allowed else "BLOCKED",
                 "layer": result.layer,
                 "reason": result.reason,
+                "storage_mode": storage_mode,
+                "webhook_enabled": self.webhook_provider is not None,
             }
 
             trace_path.write_text(json.dumps(trace_data), encoding="utf-8")

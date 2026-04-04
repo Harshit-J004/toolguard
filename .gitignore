@@ -44,6 +44,7 @@ site/
 *.html
 !docs/**/*.html
 !examples/**/*.html
+!toolguard/dashboard/**/*.html
 
 # ToolGuard local database
 .toolguard/

@@ -8,7 +8,7 @@ MCP is the universal standard for connecting LLMs to external tools — but the 
 
 ## The Solution
 
-ToolGuard's MCP Proxy sits between any MCP client and server, applying a **6-Layer Interceptor Pipeline** to every `tools/call` request:
+ToolGuard's MCP Proxy sits between any MCP client and server, applying a **7-Layer Interceptor Pipeline** to every `tools/call` request:
 
 | Layer | Name | What It Does |
 |-------|------|-------------|
@@ -17,7 +17,8 @@ ToolGuard's MCP Proxy sits between any MCP client and server, applying a **6-Lay
 | L3 | **Injection** | Recursive DFS scan for prompt injection patterns in arguments |
 | L4 | **Rate-Limit** | Per-tool call frequency caps (sliding 1-minute window) |
 | L5 | **Semantic** | Context-aware authorization — regex deny, path patterns, session scope |
-| L6 | **Trace** | Full execution DAG logging for audit and replay |
+| L6 | **Drift** | Schema drift detection — compares live payloads against frozen structural baselines |
+| L7 | **Trace** | Full execution DAG logging for audit and replay |
 
 ## Quick Start
 

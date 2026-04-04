@@ -32,7 +32,7 @@ with open("super_policy.yaml", "w") as f:
     f.write(POLICY_YAML)
 
 async def run_super_test():
-    console.print("\n[bold cyan]🚀 Starting Super Deep 6-Layer Dashboard Test...[/bold cyan]\n")
+    console.print("\n[bold cyan]🚀 Starting Super Deep 7-Layer Dashboard Test...[/bold cyan]\n")
     
     loaded_policy = MCPPolicy.from_yaml_file("super_policy.yaml")
     

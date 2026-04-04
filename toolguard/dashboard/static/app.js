@@ -161,6 +161,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         }
+
+        // Enterprise Context (v6.1.0)
+        const storageLabel = trace.storage_mode === 'redis' ? '🔴 Redis (Distributed)' : '💾 Local (SQLite/JSON)';
+        const webhookLabel = trace.webhook_enabled ? '✅ Webhook Active' : '⚫ Webhook Disabled';
+        html += `
+            <div class="inspector-section">
+                <h3>Enterprise Context</h3>
+                <div class="status-pill" style="background: #1a1a2e; border: 1px solid #333; margin-bottom: 0.5rem;">
+                    STORAGE: ${storageLabel}
+                </div>
+                <div class="status-pill" style="background: #1a1a2e; border: 1px solid #333;">
+                    APPROVALS: ${webhookLabel}
+                </div>
+            </div>
+        `;
         
         // Render Full Raw JSON at bottom
         html += `

@@ -5,7 +5,7 @@ Real-world integration test for the ToolGuard Semantic Policy Engine.
 
 Uses the OFFICIAL Anthropic `mcp` SDK to connect a genuine stdio_client
 through the `toolguard proxy` with semantic constraints, proving that
-the 6-layer interceptor works on live JSON-RPC traffic.
+the 7-layer interceptor works on live JSON-RPC traffic.
 """
 
 import sys

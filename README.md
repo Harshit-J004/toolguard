@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
 [![Integrations](https://img.shields.io/badge/integrations-10%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
-[![Security](https://img.shields.io/badge/firewall-v6.0.0--Hardened-critical?style=flat-square&logo=shield)](#-7-layer-security-interceptor-waterfall-v600)
+[![Security](https://img.shields.io/badge/firewall-v6.1.0--Enterprise-critical?style=flat-square&logo=shield)](#-7-layer-security-interceptor-waterfall-v610)
 
 </div>
 
@@ -138,8 +138,8 @@ ToolGuard features an impenetrable execution-layer security framework protecting
 - **Golden Traces (DAG Instrumentation):** With two lines of code (`with TraceTracker() as trace:`), ToolGuard natively intercepts Python `contextvars` to construct a chronologically perfect Directed Acyclic Graph of all tools orchestrated by LangChain, CrewAI, Swarm, and AutoGen.
 - **Non-Deterministic Verification:** Punishing an AI for self-correcting is an anti-pattern. Developers use `trace.assert_sequence(["auth", "refund"])` to mathematically enforce mandatory compliance checkpoints while permitting the LLM complete freedom to autonomously select supplementary network tools.
 
-### 🛡️ 7-Layer Security Interceptor Waterfall (v6.0.0)
-With the v6.0.0 Update, we are moving beyond simple validation. We are introducing a 7-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
+### 🛡️ 7-Layer Security Interceptor Waterfall (v6.1.0)
+With the v6.1.0 Enterprise Update, we have elevated ToolGuard into a distributed firewall. We are introducing a 7-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
 
 1. **L1 — Policy**: An immutable “Allow/Deny” list with absolute casing normalization. Stop dangerous tools from ever being contacted.
 2. **L2 — Risk-Tier (Human-in-the-Loop Safe)**: Upgraded to a 4-Tier production-grade risk architecture. 
@@ -147,9 +147,9 @@ With the v6.0.0 Update, we are moving beyond simple validation. We are introduci
    - `Tier 2`: Restricted tools (requires human Y/N approval). Features a configurable auto-deny **timeout** mapping to prevent hanging unattended terminals, and **TTL Approval Caching** for high-volume looping LLM executions.
    - `Tier 3`: Critical tools (requires the human to type the exact tool name to double-confirm).
    - `Tier 4`: Forbidden tools (always denied without override).
-   **If deployed to a headless Docker/AWS environment without a terminal, it automatically detects the state via sub-tty validation and Fail-Closes instantly to prevent infinite thread deadlocks.**
+   **[NEW v6.1] Asynchronous Webhook Approvals:** If deployed to a headless Docker/AWS server without a terminal, ToolGuard now natively pauses the execution and fires an interactive approval request to **Slack, Discord, or Microsoft Teams**. The LLM chain resumes instantly when the manager clicks "Approve" on their phone.
 3. **L3 — Deep-Memory Injection Defense**: Our most advanced scanner yet. A recursive DFS parser that natively decodes binary streams (`bytes`/`bytearray`) to detect hidden prompt injections that bypass surface-level text filters, **and utilizes strict depth limits to prevent Stack-Buster DoS attacks.**
-4. **L4 — Rate-Limit**: A sliding-window cap to prevent LLM loops from burning your API budget. **Now built with strictly thread-safe, atomic JSON disk-persistence to survive server "Restart Amnesia."**
+4. **L4 — Rate-Limit**: A sliding-window cap to prevent LLM loops from burning your API budget. **[NEW v6.1] Distributed Redis State:** Rate limits and approval grants are now synchronized atomically across your entire cluster via Redis, surviving server "Restart Amnesia" and load-balancer scaling.
 5. **L5 — Semantic Validation**: catches `DROP TABLE` or path traversal before execution. **Now structurally powered by an Obfuscation Unroller that automatically intercepts URL-encoded and Base64-masked payloads (`L2V0Yy9wYXNzd2Q=`) prior to canonical evaluation.**
 6. **L6 — Strict Schema Drift Enforcement**: Our most rigorous layer. Compares live LLM tool payloads against frozen structural baselines. Unlike other tools that just log changes, **ToolGuard blocks any unauthorized field additions** (Major Severity) to prevent data exfiltration and "shadow" agent behavior. **Powered by a pristine SQLite backend configured with `PRAGMA WAL` and 30-Second Thread Queuing to elegantly survive 200+ concurrent LangGraph connections.**
 7. **L7 — Real-Time Trace**: Full DAG instrumentation of every execution via Python `contextvars`, with per-tool latency metrics on every `TraceNode`. **Asynchronous JSON dump files are continuously pushed locally to power live SSE observability dashboards without blocking proxy execution.**
@@ -172,7 +172,7 @@ def fetch_price(ticker: str) -> dict:
 
 ### 📉 Schema Drift Management
 When using models like GPT-5.4 or Gemini 3.1 Flash, they can silently change field names (e.g., `temperature` to `temp`), field types, or drop required fields.
-ToolGuard `v6.0.0` allows you to take cryptographic "snapshots" of what the payload *should* look like, and then block live traffic or fail CI/CD builds if the model drifts from that baseline.
+ToolGuard `v6.1.0` allows you to take cryptographic "snapshots" of what the payload *should* look like, and then block live traffic or fail CI/CD builds if the model drifts from that baseline.
 
 **Step 1: Freeze Your Baseline** (Run this locally when you build your agent)
 ```bash
@@ -230,7 +230,7 @@ toolguard dashboard
 It streams live concurrent security interventions via SSE (Server-Sent Events) and tracks precisely which functions get blocked under payload injection. Built with a dedicated hacker-style "Terminal Elite" aesthetic, featuring a real-time **Sentinel HUD (L1-L7)** and structural DAG timeline analysis.
 
 ### 🛡️ Anthropic MCP Security Proxy (v5.1.0)
-ToolGuard now includes a language-agnostic **Secure Proxy** for the Model Context Protocol. It sits between your MCP client (Claude Desktop, etc.) and your MCP server, enforcing the 7-layer security mesh at the transport level.
+ToolGuard includes a language-agnostic **Secure CLI Proxy** for the Model Context Protocol. It sits between your MCP client (Claude Desktop, etc.) and your MCP server, enforcing the 7-layer security mesh at the transport level via `stdio`.
 
 ```bash
 # Secure any MCP server with the ToolGuard firewall
@@ -238,7 +238,33 @@ toolguard proxy --upstream "python mcp_server.py" --verbose
 # Apply a specific security policy (Golden Traces, Risk Tiers)
 toolguard proxy --upstream "npx dev-server" --policy policy.yaml
 ```
-This is the only version of ToolGuard that allows you to secure agents built in **JavaScript, Go, or Rust** by intercepting the raw JSON-RPC tool-calling payloads.
+
+### 🌍 Universal HTTP Proxy Sidecar (v6.1.0)
+ToolGuard is **no longer strictly tied to Python**. We have built an Enterprise HTTP Proxy Sidecar, enabling developers in **Java, TypeScript, Node.js, Go, and Rust** to seamlessly use ToolGuard's exact 7-layer pipeline over the local network.
+
+**Step 1: Deploy with Docker**
+DevOps teams don't need to configure Python. Just run the official Docker container.
+```bash
+docker run -d -p 8080:8080 \
+  -e TOOLGUARD_API_KEY="super_secret_corporate_key" \
+  ghcr.io/Harshit-J004/toolguard-proxy:latest
+```
+
+**Step 2: Connect from Any Language (TypeScript Example)**
+Send your tool payloads directly to the proxy. If approved, execute them.
+```typescript
+const response = await fetch("http://localhost:8080/v1/intercept", {
+  method: "POST",
+  headers: { "Authorization": "Bearer super_secret_corporate_key" },
+  body: JSON.stringify({ tool_name: "execute_sql", arguments: {"query": "DROP TABLE"} })
+});
+
+const result = await response.json();
+if (!result.allowed) { 
+  console.log("Blocked by ToolGuard Security:", result.reason); 
+}
+```
+All Proxy endpoints are fully wired into the **Obsidian Observability Dashboard** and the **Slack/Teams Webhook Managers**. This is the definitive architecture for cross-language enterprise agent swarms.
 
 ### 📊 Reliability Scoring
 Quantified trust with risk levels and deployment gates.
@@ -286,14 +312,15 @@ def call_flaky_service(data: dict) -> dict: ...
 
 ### 🖥️ CLI Commands
 ```bash
-toolguard proxy --upstream "mcp-server.py"         # 🛡️ Run the language-agnostic 7-layer MCP proxy
+toolguard serve --policy security.yaml --port 8080 --api-key "tg_xxx" # 🌍 Launch Enterprise Proxy
+toolguard proxy --upstream "python mcp.py"         # 🛡️ Run the standard CLI MCP proxy
 toolguard dashboard                                # 🦇 Launch the Obsidian live web dashboard
 toolguard run my_agent.py                          # 🚀 Zero-config auto-fuzz/test
 toolguard test --chain my_chain.yaml               # 🧪 YAML-based chain test
 toolguard replay fail_17740.json                   # ⏪ Local crash replay for debugging
-toolguard badge                <div class="cmd-line">
-                    <span class="cmd-prefix">$</span><span class="cmd-text">toolguard monitor --live --v6.0.0-Hardened --obsidian</span>
-                </div># 🔍 Check Python tool compatibility
+toolguard history                                  # 📜 View local execution history
+toolguard badge                                    # 📛 Generate reliability GitHub badge
+toolguard check my_agent.py                        # 🔍 Check Python tool compatibility
 toolguard observe --tools my_tools.py              # 📈 View tool performance stats
 toolguard init --name my_project                   # 🏗️ Scaffold a new project
 
@@ -489,9 +516,11 @@ toolguard/
 │   └── compatibility.py  # Schema conflict detection
 ├── alerts/
 │   ├── manager.py        # Abstract ThreadPool dispatcher
-│   ├── slack.py          # Block Kit formatting
-│   ├── discord.py        # Embed formatting
-│   └── datadog.py        # HTTP Metrics + Events sink
+│   ├── slack.py          # Block Kit interactive formatting
+│   ├── discord.py        # Embeds and remote approval logic
+│   ├── teams.py          # Adaptive Cards integration
+│   ├── datadog.py        # HTTP Metrics + Events sink
+│   └── generic.py        # Standard JSON webhook hooks
 ├── cli/
 │   └── commands/         # run, test, check, observe, badge, init
 ├── reporters/
