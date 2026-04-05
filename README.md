@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
 [![Integrations](https://img.shields.io/badge/integrations-10%20frameworks-blueviolet?style=flat-square)](#native-framework-integrations)
-[![Security](https://img.shields.io/badge/firewall-v6.1.0--Enterprise-critical?style=flat-square&logo=shield)](#-7-layer-security-interceptor-waterfall-v610)
+[![Security](https://img.shields.io/badge/firewall-v6.1.1--Enterprise-critical?style=flat-square&logo=shield)](#-7-layer-security-interceptor-waterfall-v611)
 
 </div>
 
@@ -138,8 +138,8 @@ ToolGuard features an impenetrable execution-layer security framework protecting
 - **Golden Traces (DAG Instrumentation):** With two lines of code (`with TraceTracker() as trace:`), ToolGuard natively intercepts Python `contextvars` to construct a chronologically perfect Directed Acyclic Graph of all tools orchestrated by LangChain, CrewAI, Swarm, and AutoGen.
 - **Non-Deterministic Verification:** Punishing an AI for self-correcting is an anti-pattern. Developers use `trace.assert_sequence(["auth", "refund"])` to mathematically enforce mandatory compliance checkpoints while permitting the LLM complete freedom to autonomously select supplementary network tools.
 
-### 🛡️ 7-Layer Security Interceptor Waterfall (v6.1.0)
-With the v6.1.0 Enterprise Update, we have elevated ToolGuard into a distributed firewall. We are introducing a 7-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
+### 🛡️ 7-Layer Security Interceptor Waterfall (v6.1.1)
+With the v6.1.1 Enterprise Hardening Update, we have elevated ToolGuard into a highly-concurrent distributed firewall. We are introducing a 7-Layer Security Interceptor Waterfall for the Model Context Protocol (MCP):
 
 1. **L1 — Policy**: An immutable “Allow/Deny” list with absolute casing normalization. Stop dangerous tools from ever being contacted.
 2. **L2 — Risk-Tier (Human-in-the-Loop Safe)**: Upgraded to a 4-Tier production-grade risk architecture. 
@@ -147,9 +147,9 @@ With the v6.1.0 Enterprise Update, we have elevated ToolGuard into a distributed
    - `Tier 2`: Restricted tools (requires human Y/N approval). Features a configurable auto-deny **timeout** mapping to prevent hanging unattended terminals, and **TTL Approval Caching** for high-volume looping LLM executions.
    - `Tier 3`: Critical tools (requires the human to type the exact tool name to double-confirm).
    - `Tier 4`: Forbidden tools (always denied without override).
-   **[NEW v6.1] Asynchronous Webhook Approvals:** If deployed to a headless Docker/AWS server without a terminal, ToolGuard now natively pauses the execution and fires an interactive approval request to **Slack, Discord, or Microsoft Teams**. The LLM chain resumes instantly when the manager clicks "Approve" on their phone.
+   **[NEW v6.1.1] Fully Asynchronous Webhook Offloading:** If deployed to a headless Docker/AWS server without a terminal, ToolGuard natively pauses the execution and fires an interactive approval request to **Slack, Discord, or Microsoft Teams**. The webhook polling is strictly offloaded to Starlette background thread pools—**mathematically guaranteeing the server never freezes for other agents while waiting for a human.**
 3. **L3 — Deep-Memory Injection Defense**: Our most advanced scanner yet. A recursive DFS parser that natively decodes binary streams (`bytes`/`bytearray`) to detect hidden prompt injections that bypass surface-level text filters, **and utilizes strict depth limits to prevent Stack-Buster DoS attacks.**
-4. **L4 — Rate-Limit**: A sliding-window cap to prevent LLM loops from burning your API budget. **[NEW v6.1] Distributed Redis State:** Rate limits and approval grants are now synchronized atomically across your entire cluster via Redis, surviving server "Restart Amnesia" and load-balancer scaling.
+4. **L4 — Rate-Limit**: A sliding-window cap to prevent LLM loops from burning your API budget. **[NEW v6.1.1] Resilient Distributed Redis State:** Rate limits and approval grants are synchronized atomically across your entire cluster via Redis. Features an intelligent zero-dependency transient retry decorator (with exponential backoff) that gracefully survives Redis network blips without crashing your proxy.
 5. **L5 — Semantic Validation**: catches `DROP TABLE` or path traversal before execution. **Now structurally powered by an Obfuscation Unroller that automatically intercepts URL-encoded and Base64-masked payloads (`L2V0Yy9wYXNzd2Q=`) prior to canonical evaluation.**
 6. **L6 — Strict Schema Drift Enforcement**: Our most rigorous layer. Compares live LLM tool payloads against frozen structural baselines. Unlike other tools that just log changes, **ToolGuard blocks any unauthorized field additions** (Major Severity) to prevent data exfiltration and "shadow" agent behavior. **Powered by a pristine SQLite backend configured with `PRAGMA WAL` and 30-Second Thread Queuing to elegantly survive 200+ concurrent LangGraph connections.**
 7. **L7 — Real-Time Trace**: Full DAG instrumentation of every execution via Python `contextvars`, with per-tool latency metrics on every `TraceNode`. **Asynchronous JSON dump files are continuously pushed locally to power live SSE observability dashboards without blocking proxy execution.**

@@ -14,7 +14,7 @@ Usage:
     report = test_chain([get_weather, process, alert], assert_reliability=0.95)
 """
 
-__version__ = "6.1.0"
+__version__ = "6.1.1"
 __author__ = "Harshit-J004"
 
 import typing

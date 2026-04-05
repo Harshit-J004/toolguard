@@ -4,6 +4,21 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
+## [6.1.1] - 2026-04-06
+
+### Fixed — Server Freeze on Webhook Approvals (Starlette Offloading)
+- **FastAPI Thread Offloading**: Changed webhook approval routes (`/approve`, `/deny`) from `async def` to standard `def`, mathematically forcing FastAPI to offload synchronous Redis polls to Starlette's background threadpool.
+- **Zero-Blocking Concurrency**: The main event loop is now 100% shielded from hanging during Human-in-the-Loop Slack webhook proxy requests.
+
+### Added — Enterprise Redis Resilience
+- **Transient Network Recovery**: Wrapped the `RedisStorageBackend` in a zero-dependency `@_retry_on_transient` decorator. Network blips dynamically retry up to 3 times (with `0.1s -> 0.2s -> 0.4s` exponential backoff) before crashing an agent pipeline.
+- **Fatal Error Fast-Fail**: Implemented strict exception whitelisting to guarantee configuration errors like `AuthenticationError` bypass the retry loop and instantly fail.
+
+### Removed
+- **Dead Code Cleanup**: Eliminated the legacy, unused `RateLimiter` class from `interceptor.py` as all sliding-window enforcement is now globally guaranteed by the `StorageBackend`.
+
+---
+
 ## [6.1.0] - 2026-04-03
 
 ### Added — Enterprise HTTP Proxy Sidecar (Cross-Language Support)
