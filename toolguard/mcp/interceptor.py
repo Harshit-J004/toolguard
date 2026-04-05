@@ -45,59 +45,6 @@ class InterceptResult:
     layer: str = ""  # Which layer blocked it
 
 
-# ──────────────────────────────────────────────
-#  Rate Limiter (sliding window)
-# ──────────────────────────────────────────────
-
-class RateLimiter:
-    """Simple per-tool sliding-window rate limiter."""
-
-    def __init__(self):
-        self._calls: dict[str, list[float]] = {}
-        self._lock = threading.Lock()
-        self._cache_file = Path(".toolguard/rate_limits.json")
-        self._load_cache()
-
-    def _load_cache(self) -> None:
-        try:
-            if self._cache_file.exists():
-                self._calls = json.loads(self._cache_file.read_text("utf-8"))
-        except Exception:
-            self._calls = {}
-
-    def _save_cache(self) -> None:
-        try:
-            self._cache_file.parent.mkdir(parents=True, exist_ok=True)
-            self._cache_file.write_text(json.dumps(self._calls), "utf-8")
-        except Exception:
-            pass
-
-    def check(self, tool_name: str, limit: int) -> bool:
-        """Returns True if the call is allowed, False if rate-limited.
-        
-        Hardened: Uses normalized tool names and explicit thread-locks to 
-        ensure atomic window updates under high production load.
-        """
-        name = tool_name.strip().casefold()
-        now = time.time()
-        window_start = now - 60.0  # 1-minute window
-
-        with self._lock:
-            if name not in self._calls:
-                self._calls[name] = []
-
-            # Prune old entries
-            self._calls[name] = [
-                t for t in self._calls[name] if t > window_start
-            ]
-
-            if len(self._calls[name]) >= limit:
-                self._save_cache()
-                return False
-
-            self._calls[name].append(now)
-            self._save_cache()
-            return True
 
 
 # ──────────────────────────────────────────────

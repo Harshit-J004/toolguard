@@ -26,6 +26,7 @@ from typing import Any, Dict, Optional
 try:
     from fastapi import APIRouter, FastAPI, Query, Request, HTTPException, Depends
     from fastapi.responses import HTMLResponse, JSONResponse
+    from starlette.concurrency import run_in_threadpool
     from pydantic import BaseModel
 except ImportError:
     raise ImportError(
@@ -102,7 +103,7 @@ def create_approval_router(storage: StorageBackend) -> APIRouter:
     router = APIRouter(prefix="/toolguard", tags=["ToolGuard Approvals"])
 
     @router.get("/approve", response_class=HTMLResponse)
-    async def approve_grant(grant_id: str = Query(..., description="The execution grant UUID")):
+    def approve_grant(grant_id: str = Query(..., description="The execution grant UUID")):
         """Approve a pending execution grant."""
         status = storage.check_grant_status(grant_id)
         
@@ -136,7 +137,7 @@ def create_approval_router(storage: StorageBackend) -> APIRouter:
         )
 
     @router.get("/deny", response_class=HTMLResponse)
-    async def deny_grant(grant_id: str = Query(..., description="The execution grant UUID")):
+    def deny_grant(grant_id: str = Query(..., description="The execution grant UUID")):
         """Deny a pending execution grant."""
         status = storage.check_grant_status(grant_id)
         
@@ -170,7 +171,7 @@ def create_approval_router(storage: StorageBackend) -> APIRouter:
         )
 
     @router.get("/status")
-    async def grant_status(grant_id: str = Query(...)):
+    def grant_status(grant_id: str = Query(...)):
         """Check the current status of a grant (JSON API)."""
         status = storage.check_grant_status(grant_id)
         return {"grant_id": grant_id, "status": status or "EXPIRED"}
@@ -206,7 +207,11 @@ def create_intercept_router(interceptor: MCPInterceptor,
         """
         start = time.perf_counter()
         
-        result = interceptor.intercept(request.tool_name, request.arguments)
+        # Offload blocking intercept (which may poll for webhook approval)
+        # to a background thread so the event loop stays responsive.
+        result = await run_in_threadpool(
+            interceptor.intercept, request.tool_name, request.arguments
+        )
         
         latency_ms = (time.perf_counter() - start) * 1000
         
