@@ -1,0 +1,70 @@
+# Git
+.git/
+.github/
+.gitignore
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# ToolGuard local database
+.toolguard/
+
+# Tests (not needed in production container)
+tests/
+integration_tests/
+fuzz_targets/
+test-sandbox/
+.pytest_cache/
+
+# Root-level test scripts
+test_*.py
+verify_*.py
+live_*.py
+mock_*.py
+dummy_*.py
+fake_*.py
+run_diag.py
+simulate_*.py
+deep_layer_*.py
+test_policy.yaml
+action.yml
+
+# Output logs and reports
+*.txt
+*.log
+*.xml
+*_fuzz_report.json
+
+# Documentation (not needed at runtime)
+docs/
+mkdocs.yml
+CHANGELOG.md
+CONTRIBUTING.md
+README.md
+LICENSE
+
+# Examples (not needed in proxy container)
+examples/
+
+# Releases and announcements
+releases/
+
+# Node mock servers
+*.js
+
+# Docker (don't copy Docker into Docker)
+Dockerfile
+docker-compose.yml
