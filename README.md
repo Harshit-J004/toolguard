@@ -246,8 +246,8 @@ ToolGuard is **no longer strictly tied to Python**. We have built an Enterprise 
 DevOps teams don't need to configure Python. Just run the official Docker container.
 ```bash
 docker run -d -p 8080:8080 \
-  -e TOOLGUARD_API_KEY="super_secret_corporate_key" \
-  ghcr.io/Harshit-J004/toolguard-proxy:latest
+  -e TOOLGUARD_API_KEY="my_secret_key" \
+  ghcr.io/harshit-j004/toolguard-proxy:latest
 ```
 
 **Step 2: Connect from Any Language (TypeScript Example)**
