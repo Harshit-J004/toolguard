@@ -243,11 +243,19 @@ toolguard proxy --upstream "npx dev-server" --policy policy.yaml
 ToolGuard is **no longer strictly tied to Python**. We have built an Enterprise HTTP Proxy Sidecar, enabling developers in **Java, TypeScript, Node.js, Go, and Rust** to seamlessly use ToolGuard's exact 7-layer pipeline over the local network.
 
 **Step 1: Deploy with Docker**
-DevOps teams don't need to configure Python. Just run the official Docker container.
+DevOps teams don't need to configure Python. The proxy is available publicly on the GitHub Container Registry.
+
 ```bash
-docker run -d -p 8080:8080 \
+# 1. Pull the latest hardened image
+docker pull ghcr.io/harshit-j004/toolguard-proxy:latest
+
+# 2. Run the proxy in the background (detached)
+docker run -d --name toolguard-proxy -p 8080:8080 \
   -e TOOLGUARD_API_KEY="my_secret_key" \
   ghcr.io/harshit-j004/toolguard-proxy:latest
+
+# 3. Verify it booted successfully
+docker logs toolguard-proxy
 ```
 
 **Step 2: Connect from Any Language (TypeScript Example)**
@@ -255,7 +263,7 @@ Send your tool payloads directly to the proxy. If approved, execute them.
 ```typescript
 const response = await fetch("http://localhost:8080/v1/intercept", {
   method: "POST",
-  headers: { "Authorization": "Bearer super_secret_corporate_key" },
+  headers: { "Authorization": "Bearer my_secret_key" },
   body: JSON.stringify({ tool_name: "execute_sql", arguments: {"query": "DROP TABLE"} })
 });
 
