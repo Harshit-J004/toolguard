@@ -1,14 +1,13 @@
 name: Publish ToolGuard to PyPI
 
 on:
-  workflow_dispatch:  # Allows you to click a button on GitHub to upload manually!
+  workflow_dispatch:  
 
 jobs:
   pypi-publish:
     name: upload release to PyPI
     runs-on: ubuntu-latest
     
-    # These permissions are required for Trusted Publishing to work
     environment:
       name: pypi
       url: https://pypi.org/p/py-toolguard
