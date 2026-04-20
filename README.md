@@ -6,6 +6,10 @@
 
 ![ToolGuard v6.1.0 Enterprise Dashboard](docs/images/dashboard_v6_1_enterprise.png)
 
+### 🎬 See It In Action (5-Min Raw Technical Demo)
+Watch ToolGuard live-block prompt injections, detect silent schema drift variations, and perfectly intercept hazardous tools with human-in-the-loop Discord approvals:
+👉 **[Watch the 5-Minute Demo Video](https://drive.google.com/file/d/1NBPHVgwfK6z4B6PlqAlAXfZT9dB_DpAd/view?usp=sharing)**
+
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-50%20passed-brightgreen?style=flat-square)](#)
