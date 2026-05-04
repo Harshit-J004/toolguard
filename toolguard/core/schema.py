@@ -90,15 +90,18 @@ def auto_generate_input_model(func: Callable) -> type[BaseModel]:
 def auto_generate_schema(
     func: Callable,
     *,
+    input_model: type[BaseModel] | None = None,
     output_model: type[BaseModel] | None = None,
 ) -> ToolSchema:
     """Build a complete ToolSchema from a function.
 
     Args:
         func:          The tool function to introspect.
+        input_model:   Optional Pydantic model for inputs (bypasses auto-generation).
         output_model:  Optional Pydantic model describing the return value.
     """
-    input_model = auto_generate_input_model(func)
+    if input_model is None:
+        input_model = auto_generate_input_model(func)
 
     return ToolSchema(
         name=func.__name__,

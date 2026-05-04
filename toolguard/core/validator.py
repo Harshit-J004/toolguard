@@ -421,7 +421,7 @@ def create_tool(
             resolved_input = auto_generate_input_model(func)
 
         # Build schema
-        tool_schema = auto_generate_schema(func, output_model=output_model)
+        tool_schema = auto_generate_schema(func, input_model=resolved_input, output_model=output_model)
         tool_schema.version = version
 
         return GuardedTool(

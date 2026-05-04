@@ -52,8 +52,6 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
         func = lc_tool.coroutine
     elif hasattr(lc_tool, "func") and callable(lc_tool.func):
         func = lc_tool.func
-    elif hasattr(lc_tool, "_arun"):
-        func = lc_tool._arun
     elif hasattr(lc_tool, "_run"):
         # Check if _run is actually implemented (not just the abstract stub)
         try:
@@ -63,6 +61,8 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
                 func = lc_tool._run
         except (TypeError, OSError):
             func = lc_tool._run  # Can't inspect, assume it's real
+    elif hasattr(lc_tool, "_arun"):
+        func = lc_tool._arun
             
     if func is None:
         func = getattr(lc_tool, "ainvoke", getattr(lc_tool, "invoke", None))
@@ -70,8 +70,14 @@ def guard_langchain_tool(lc_tool: Any) -> GuardedTool:
     if func is None:
         raise ValueError(f"Could not extract an underlying function or coroutine from {lc_tool.name}")
 
+    # Use LangChain's native Pydantic schema if available, otherwise fallback to auto
+    input_model = getattr(lc_tool, "args_schema", None)
+    
     # Wrap the extracted function directly
-    guarded = create_tool(schema="auto")(func)
+    if input_model:
+        guarded = create_tool(input_model=input_model)(func)
+    else:
+        guarded = create_tool(schema="auto")(func)
     
     # Overwrite with accurate LangChain metadata
     guarded.name = lc_tool.name
