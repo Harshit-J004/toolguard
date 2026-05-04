@@ -4,6 +4,20 @@ All notable changes to ToolGuard are documented here. This project follows [Sema
 
 ---
 
+## [6.1.2] - 2026-05-04
+
+### Fixed — Security Patch: Null Byte DoS in Schema Drift Engine
+- **`_looks_like_ipv4()` / `_looks_like_ipv6()` Crash**: `socket.inet_pton()` raises `ValueError` (not `socket.error`) when the input string contains embedded null bytes (`\x00`). This caused an **unhandled crash** in the drift detection engine, exploitable as a denial-of-service attack. Fixed by broadening the exception handler to catch `(socket.error, ValueError, OSError)`.
+- **Discovery Method**: Found by **Hypothesis property-based testing** — not manual code review. The fuzzer generated a `'\x00'` string input that no human tester would think to try.
+
+### Added — Adversarial Red-Team Test Suite (82 Attack Vectors)
+- **`test_redteam_evasion.py`** (54 tests): Adversarial evasion attacks across all 7 security layers — Unicode homoglyphs, fragmented injections, Base64 encoding, path traversal, SQL comment evasion, and more.
+- **`test_redteam_robustness.py`** (16 tests): Crash/DoS resistance — 500-level deep nesting, 1MB payloads, circular references, 200 concurrent threads, malformed UTF-8, NaN/Infinity floats.
+- **`test_property_based.py`** (12 tests / 1,700+ generated cases): Hypothesis-powered invariant testing — randomly plants injections at random depths/widths/container types and verifies the scanner catches every single one.
+- **Result**: 82/82 passed. Zero bypasses. Zero crashes.
+
+---
+
 ## [6.1.1] - 2026-04-06
 
 ### Fixed — Server Freeze on Webhook Approvals (Starlette Offloading)

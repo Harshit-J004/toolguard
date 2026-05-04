@@ -1,7 +1,7 @@
 name: Publish ToolGuard to PyPI
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
 
 jobs:
   pypi-publish:

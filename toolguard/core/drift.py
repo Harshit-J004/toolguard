@@ -151,14 +151,14 @@ def _looks_like_ipv4(val: str) -> bool:
     try:
         socket.inet_pton(socket.AF_INET, val)
         return True
-    except socket.error:
+    except (socket.error, ValueError, OSError):
         return False
 
 def _looks_like_ipv6(val: str) -> bool:
     try:
         socket.inet_pton(socket.AF_INET6, val)
         return True
-    except socket.error:
+    except (socket.error, ValueError, OSError):
         return False
 
 
